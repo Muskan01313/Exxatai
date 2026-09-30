@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  memberships WorkspaceMember[]
+  createdPages Page[]           @relation("PageCreatedBy")
+}
+
+enum WorkspaceRole {
+  OWNER
+  EDITOR
+}
+
+model Workspace {
+  id        String   @id @default(uuid())
+  name      String
+  ownerId   String
+  createdAt DateTime @default(now())
+
+  members WorkspaceMember[]
+  pages   Page[]
+}
+
+model WorkspaceMember {
+  id          String        @id @default(uuid())
+  workspaceId String
+  userId      String
+  role        WorkspaceRole @default(OWNER)
+  createdAt   DateTime      @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+}
+
+model Page {
+  id          String   @id @default(uuid())
+  workspaceId String
+  parentId    String?
+  title       String   @default("Untitled")
+  icon        String?
+  content     Json     @default("[]")
+  order       Int      @default(0)
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  parent    Page?       @relation("PageChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children  Page[]      @relation("PageChildren")
+  createdBy User        @relation("PageCreatedBy", fields: [createdById], references: [id])
+  chunks    PageChunk[]
+
+  @@index([workspaceId, parentId])
+}
+
+model PageChunk {
+  id         String   @id @default(uuid())
+  pageId     String
+  chunkIndex Int
+  content    String
+  embedding  Float[]
+  createdAt  DateTime @default(now())
+
+  page Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@unique([pageId, chunkIndex])
+}
