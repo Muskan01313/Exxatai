@@ -7,7 +7,6 @@ export interface ChatMessage {
 
 export interface StreamChatOptions {
   maxTokens?: number;
-  temperature?: number;
 }
 
 export interface TextProvider {

@@ -15,8 +15,7 @@ export const openAiTextProvider: TextProvider = {
       model: process.env.OPENAI_MODEL || "gpt-4o-mini",
       messages: messages.map((m) => ({ role: m.role, content: m.content })),
       stream: true,
-      max_tokens: options?.maxTokens ?? 1024,
-      temperature: options?.temperature,
+      max_tokens: options?.maxTokens ?? 4096,
     });
 
     for await (const chunk of stream) {

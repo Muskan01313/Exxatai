@@ -19,18 +19,25 @@ export const anthropicTextProvider: TextProvider = {
       .filter((m) => m.role !== "system")
       .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
 
-    const stream = getClient().messages.stream({
-      model: process.env.ANTHROPIC_MODEL || "claude-sonnet-5",
-      max_tokens: options?.maxTokens ?? 1024,
-      temperature: options?.temperature,
+    const stream = getClient().beta.messages.stream({
+      model: process.env.ANTHROPIC_MODEL || "claude-opus-5-5",
+      // Current models always think first, and thinking counts toward max_tokens.
+      max_tokens: options?.maxTokens ?? 16000,
       system: system || undefined,
       messages: conversation,
+      betas: ["server-side-fallback-2026-07-01"],
+      fallbacks: "default",
     });
 
     for await (const event of stream) {
       if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
         yield event.delta.text;
       }
+    }
+
+    const final = await stream.finalMessage();
+    if (final.stop_reason === "refusal") {
+      yield "\n\nClaude declined this request. Try rephrasing it.";
     }
   },
 };
