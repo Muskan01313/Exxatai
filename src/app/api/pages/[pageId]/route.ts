@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@/generated/prisma/client";
@@ -73,9 +73,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ pa
   });
 
   if (content !== undefined) {
-    void indexPage(pageId).catch((error) => {
-      console.error("Failed to index page for AI search", pageId, error);
-    });
+    after(() =>
+      indexPage(pageId).catch((error) => {
+        console.error("Failed to index page for AI search", pageId, error);
+      }),
+    );
   }
 
   return NextResponse.json({ page: updated });

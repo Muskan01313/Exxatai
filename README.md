@@ -61,6 +61,16 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000), sign up, and start writing.
 
+## Deploy to Vercel (no local install needed)
+
+1. Sign in at [vercel.com](https://vercel.com) with GitHub, click **Add New → Project**, and import this repository. Don't click Deploy yet.
+2. Under **Environment Variables**, add `NEXTAUTH_SECRET` (any long random string). Optionally add `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` (with `AI_TEXT_PROVIDER=anthropic`) for the AI features.
+3. Click **Deploy**. The first build fails because there's no database yet; that's expected.
+4. In the project, open **Storage → Create Database → Neon**, accept the defaults, and connect it to the project. This adds `DATABASE_URL` and `DATABASE_URL_UNPOOLED` for you.
+5. Go to **Deployments**, open the ⋯ menu on the latest deployment, and choose **Redeploy**.
+
+The `vercel-build` script runs the database migrations on every deploy. Don't set `NEXTAUTH_URL` on Vercel; the site address is detected automatically.
+
 ## Project structure
 
 ```
