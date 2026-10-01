@@ -5,6 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import {
+  Bell,
+  CircleCheckBig,
   ChevronDown,
   ChevronsLeft,
   FileText,
@@ -20,6 +22,8 @@ import { PageTreeItem } from "./PageTreeItem";
 import { TrashList } from "./TrashList";
 import { useWorkspace } from "@/components/workspace/WorkspaceContext";
 import { Dropdown, MenuDivider, MenuItem } from "@/components/ui/Dropdown";
+import { DUE_TONE_CLASS, dueTone, formatDue } from "@/components/tracker/dates";
+import { groupReminders, reminderHref, urgentCount } from "@/components/tracker/reminders";
 
 function useExpanded(workspaceId: string) {
   const storageKey = `sidebar-expanded:${workspaceId}`;
@@ -49,7 +53,17 @@ function useExpanded(workspaceId: string) {
   return [expanded, update] as const;
 }
 
-function NavItem({ icon, label, hint, onClick }: { icon: ReactNode; label: string; hint?: string; onClick: () => void }) {
+function NavItem({
+  icon,
+  label,
+  hint,
+  onClick,
+}: {
+  icon: ReactNode;
+  label: string;
+  hint?: ReactNode;
+  onClick: () => void;
+}) {
   return (
     <button
       type="button"
@@ -63,11 +77,59 @@ function NavItem({ icon, label, hint, onClick }: { icon: ReactNode; label: strin
   );
 }
 
+function RemindersMenu({ close }: { close: () => void }) {
+  const ws = useWorkspace();
+  const router = useRouter();
+  const groups = groupReminders(ws.reminders);
+  const sections = (Object.keys(groups) as (keyof typeof groups)[]).filter((g) => groups[g].length > 0);
+
+  return (
+    <div className="w-[300px]" data-testid="reminders-menu">
+      <p className="px-3 pt-1 pb-1.5 text-xs font-medium text-ink-3">Deliveries</p>
+      {sections.length === 0 && <p className="px-3 pb-2 text-sm text-ink-2">Nothing due in the next 7 days.</p>}
+      {sections.map((group) => (
+        <div key={group} className="pb-1">
+          <p className="px-3 pt-1 text-[11px] font-medium tracking-wide text-ink-3 uppercase">{group}</p>
+          {groups[group].map((r) => (
+            <button
+              key={r.id}
+              type="button"
+              onClick={() => {
+                close();
+                router.push(reminderHref(r));
+              }}
+              className="mx-1 flex w-[calc(100%-0.5rem)] flex-col items-start rounded-md px-2 py-1.5 text-left hover:bg-hover"
+            >
+              <span className="w-full truncate">{r.title}</span>
+              <span className={`mt-0.5 rounded px-1.5 py-px text-xs ${DUE_TONE_CLASS[dueTone(r.dueAt)]}`}>
+                {formatDue(r.dueAt)}
+                {r.workspaceId !== ws.workspaceId && " · other workspace"}
+              </span>
+            </button>
+          ))}
+        </div>
+      ))}
+      <MenuDivider />
+      <MenuItem
+        icon={<CircleCheckBig size={15} />}
+        onClick={() => {
+          close();
+          router.push(`/w/${ws.workspaceId}/tracker`);
+        }}
+      >
+        Open my tracker
+      </MenuItem>
+    </div>
+  );
+}
+
 export function Sidebar({ onCollapse }: { onCollapse: () => void }) {
   const ws = useWorkspace();
   const router = useRouter();
   const pathname = usePathname();
   const currentPageId = pathname?.match(/\/p\/([^/]+)/)?.[1];
+  const onTracker = pathname?.endsWith("/tracker") ?? false;
+  const urgent = urgentCount(ws.reminders);
   const [expanded, setExpanded] = useExpanded(ws.workspaceId);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [rootDrop, setRootDrop] = useState(false);
@@ -219,6 +281,39 @@ export function Sidebar({ onCollapse }: { onCollapse: () => void }) {
       <nav className="px-2 pt-1 pb-2">
         <NavItem icon={<Search size={16} />} label="Search" hint="Ctrl K" onClick={ws.openSearch} />
         <NavItem icon={<Sparkles size={16} />} label="Ask AI" onClick={ws.openChat} />
+        <Link
+          href={`/w/${ws.workspaceId}/tracker`}
+          className={`flex h-[30px] w-full items-center gap-2 rounded-md px-2 text-sm hover:bg-hover ${
+            onTracker ? "bg-hover font-medium text-ink" : "text-ink-2"
+          }`}
+        >
+          <span className="flex w-5 justify-center">
+            <CircleCheckBig size={16} />
+          </span>
+          <span className="flex-1">My tracker</span>
+        </Link>
+        <Dropdown
+          className="py-2"
+          trigger={({ toggle }) => (
+            <NavItem
+              icon={<Bell size={16} />}
+              label="Reminders"
+              hint={
+                urgent > 0 ? (
+                  <span
+                    data-testid="reminder-count"
+                    className="flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#eb5757] px-1 text-[11px] font-semibold text-white"
+                  >
+                    {urgent}
+                  </span>
+                ) : undefined
+              }
+              onClick={toggle}
+            />
+          )}
+        >
+          {(close) => <RemindersMenu close={close} />}
+        </Dropdown>
         <NavItem icon={<Settings size={16} />} label="Settings & members" onClick={ws.openSettings} />
       </nav>
 

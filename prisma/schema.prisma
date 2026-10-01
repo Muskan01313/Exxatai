@@ -14,11 +14,76 @@ model User {
   passwordHash String
   createdAt    DateTime @default(now())
 
+  // Tracker reminder settings
+  timezone       String  @default("UTC")
+  emailReminders Boolean @default(true)
+  calendarToken  String? @unique
+  // Local date (YYYY-MM-DD) of the last morning email, so a retried cron doesn't send twice.
+  lastDigestOn   String?
+
   memberships  WorkspaceMember[]
   createdPages Page[]            @relation("PageCreatedBy")
   favorites    Favorite[]
   comments     Comment[]
   invites      WorkspaceInvite[]
+  tasks        Task[]
+  timeEntries  TimeEntry[]
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model Task {
+  id              String       @id @default(uuid())
+  userId          String
+  workspaceId     String
+  title           String
+  notes           String       @default("")
+  status          TaskStatus   @default(TODO)
+  priority        TaskPriority @default(MEDIUM)
+  // The calendar day (YYYY-MM-DD, in the owner's own calendar) the work is planned for.
+  plannedDay      String?
+  // Delivery deadline.
+  dueAt           DateTime?
+  // Remind this many minutes before dueAt; null means no reminder.
+  reminderMinutes Int?
+  completedAt     DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace   Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  timeEntries TimeEntry[]
+
+  @@index([userId, workspaceId])
+  @@index([userId, dueAt])
+}
+
+model TimeEntry {
+  id          String    @id @default(uuid())
+  userId      String
+  workspaceId String
+  taskId      String?
+  description String    @default("")
+  startedAt   DateTime
+  // Null while the timer is running.
+  endedAt     DateTime?
+  createdAt   DateTime  @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  task      Task?     @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  @@index([userId, startedAt])
 }
 
 enum WorkspaceRole {
@@ -32,9 +97,11 @@ model Workspace {
   ownerId   String
   createdAt DateTime @default(now())
 
-  members WorkspaceMember[]
-  pages   Page[]
-  invites WorkspaceInvite[]
+  members     WorkspaceMember[]
+  pages       Page[]
+  invites     WorkspaceInvite[]
+  tasks       Task[]
+  timeEntries TimeEntry[]
 }
 
 model WorkspaceInvite {

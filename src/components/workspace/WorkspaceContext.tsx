@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import type { PageTreeNode, WorkspaceSummary } from "@/types/page";
+import type { ReminderItem } from "@/types/tracker";
 
 interface WorkspaceContextValue {
   workspaceId: string;
@@ -26,6 +27,9 @@ interface WorkspaceContextValue {
   openSettings: () => void;
   openChat: () => void;
   toast: (message: string) => void;
+  /** Your open deliveries that are overdue or due within a week (from the tracker). */
+  reminders: ReminderItem[];
+  refreshReminders: () => Promise<void>;
 }
 
 const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);
@@ -50,7 +54,7 @@ export function WorkspaceProvider({
   workspaceName: string;
   workspaces: WorkspaceSummary[];
   userName: string;
-  ui: Pick<WorkspaceContextValue, "openSearch" | "openSettings" | "openChat" | "toast">;
+  ui: Pick<WorkspaceContextValue, "openSearch" | "openSettings" | "openChat" | "toast" | "reminders" | "refreshReminders">;
   children: ReactNode;
 }) {
   const router = useRouter();
