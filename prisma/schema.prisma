@@ -14,8 +14,11 @@ model User {
   passwordHash String
   createdAt    DateTime @default(now())
 
-  memberships WorkspaceMember[]
-  createdPages Page[]           @relation("PageCreatedBy")
+  memberships  WorkspaceMember[]
+  createdPages Page[]            @relation("PageCreatedBy")
+  favorites    Favorite[]
+  comments     Comment[]
+  invites      WorkspaceInvite[]
 }
 
 enum WorkspaceRole {
@@ -31,6 +34,22 @@ model Workspace {
 
   members WorkspaceMember[]
   pages   Page[]
+  invites WorkspaceInvite[]
+}
+
+model WorkspaceInvite {
+  id          String        @id @default(uuid())
+  workspaceId String
+  token       String        @unique
+  role        WorkspaceRole @default(EDITOR)
+  createdById String
+  createdAt   DateTime      @default(now())
+  revokedAt   DateTime?
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy User      @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
 }
 
 model WorkspaceMember {
@@ -47,24 +66,57 @@ model WorkspaceMember {
 }
 
 model Page {
-  id          String   @id @default(uuid())
-  workspaceId String
-  parentId    String?
-  title       String   @default("Untitled")
-  icon        String?
-  content     Json     @default("[]")
-  order       Int      @default(0)
-  createdById String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String    @id @default(uuid())
+  workspaceId    String
+  parentId       String?
+  title          String    @default("Untitled")
+  icon           String?
+  cover          String?
+  content        Json      @default("[]")
+  // Bumped on every content save; clients send it back to detect concurrent edits.
+  contentVersion Int       @default(0)
+  plainText      String    @default("")
+  order          Int       @default(0)
+  isPublic       Boolean   @default(false)
+  deletedAt      DateTime?
+  createdById    String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   workspace Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   parent    Page?       @relation("PageChildren", fields: [parentId], references: [id], onDelete: Cascade)
   children  Page[]      @relation("PageChildren")
   createdBy User        @relation("PageCreatedBy", fields: [createdById], references: [id])
   chunks    PageChunk[]
+  favorites Favorite[]
+  comments  Comment[]
 
   @@index([workspaceId, parentId])
+}
+
+model Favorite {
+  id        String   @id @default(uuid())
+  userId    String
+  pageId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  page Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, pageId])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  pageId    String
+  authorId  String
+  body      String
+  createdAt DateTime @default(now())
+
+  page   Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([pageId])
 }
 
 model PageChunk {

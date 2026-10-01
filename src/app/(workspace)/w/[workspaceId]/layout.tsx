@@ -25,8 +25,8 @@ export default async function WorkspaceLayout({
     orderBy: { createdAt: "asc" },
   });
 
-  const isMember = memberships.some((m) => m.workspaceId === workspaceId);
-  if (!isMember) {
+  const current = memberships.find((m) => m.workspaceId === workspaceId);
+  if (!current) {
     notFound();
   }
 
@@ -38,7 +38,9 @@ export default async function WorkspaceLayout({
 
   return (
     <WorkspaceShell
+      key={workspaceId}
       workspaceId={workspaceId}
+      workspaceName={current.workspace.name}
       workspaces={workspaces}
       userName={session.user.name ?? session.user.email ?? "Account"}
     >

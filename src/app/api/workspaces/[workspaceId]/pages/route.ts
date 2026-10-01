@@ -1,30 +1,31 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUserId } from "@/lib/session";
-import { isWorkspaceMember } from "@/lib/workspace";
+import { requireWorkspaceAccess, jsonError } from "@/lib/api";
 
-export async function GET(
-  _request: Request,
-  { params }: { params: Promise<{ workspaceId: string }> },
-) {
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+type Params = { params: Promise<{ workspaceId: string }> };
 
+export async function GET(_request: Request, { params }: Params) {
   const { workspaceId } = await params;
-  if (!(await isWorkspaceMember(workspaceId, userId))) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const access = await requireWorkspaceAccess(workspaceId);
+  if (access instanceof Response) {
+    return access;
   }
 
-  const pages = await prisma.page.findMany({
-    where: { workspaceId },
-    select: { id: true, title: true, icon: true, parentId: true, order: true },
-    orderBy: [{ order: "asc" }, { createdAt: "asc" }],
-  });
+  const [pages, favorites] = await Promise.all([
+    prisma.page.findMany({
+      where: { workspaceId, deletedAt: null },
+      select: { id: true, title: true, icon: true, parentId: true, order: true },
+      orderBy: [{ order: "asc" }, { createdAt: "asc" }],
+    }),
+    prisma.favorite.findMany({
+      where: { userId: access.userId, page: { workspaceId, deletedAt: null } },
+      orderBy: { createdAt: "asc" },
+      select: { pageId: true },
+    }),
+  ]);
 
-  return NextResponse.json({ pages });
+  return NextResponse.json({ pages, favoritePageIds: favorites.map((f) => f.pageId) });
 }
 
 const createPageSchema = z.object({
@@ -32,44 +33,39 @@ const createPageSchema = z.object({
   parentId: z.string().uuid().nullable().optional(),
 });
 
-export async function POST(
-  request: Request,
-  { params }: { params: Promise<{ workspaceId: string }> },
-) {
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export async function POST(request: Request, { params }: Params) {
   const { workspaceId } = await params;
-  if (!(await isWorkspaceMember(workspaceId, userId))) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const access = await requireWorkspaceAccess(workspaceId);
+  if (access instanceof Response) {
+    return access;
   }
 
-  const body = await request.json().catch(() => ({}));
-  const parsed = createPageSchema.safeParse(body);
+  const parsed = createPageSchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+    return jsonError("Invalid input", 400);
   }
+  const parentId = parsed.data.parentId ?? null;
 
-  if (parsed.data.parentId) {
-    const parent = await prisma.page.findUnique({ where: { id: parsed.data.parentId } });
-    if (!parent || parent.workspaceId !== workspaceId) {
-      return NextResponse.json({ error: "Invalid parent page" }, { status: 400 });
+  if (parentId) {
+    const parent = await prisma.page.findUnique({ where: { id: parentId } });
+    if (!parent || parent.workspaceId !== workspaceId || parent.deletedAt) {
+      return jsonError("Invalid parent page", 400);
     }
   }
 
-  const siblingCount = await prisma.page.count({
-    where: { workspaceId, parentId: parsed.data.parentId ?? null },
+  const last = await prisma.page.findFirst({
+    where: { workspaceId, parentId, deletedAt: null },
+    orderBy: { order: "desc" },
+    select: { order: true },
   });
 
   const page = await prisma.page.create({
     data: {
       workspaceId,
-      parentId: parsed.data.parentId ?? null,
-      title: parsed.data.title || "Untitled",
-      createdById: userId,
-      order: siblingCount,
+      parentId,
+      title: parsed.data.title?.trim() || "Untitled",
+      createdById: access.userId,
+      order: (last?.order ?? -1) + 1,
       content: [],
     },
   });

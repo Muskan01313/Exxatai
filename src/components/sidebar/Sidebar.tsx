@@ -1,121 +1,295 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState, type DragEvent, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
+import Link from "next/link";
+import {
+  ChevronDown,
+  ChevronsLeft,
+  FileText,
+  LogOut,
+  Plus,
+  Search,
+  Settings,
+  Sparkles,
+  SquarePen,
+  Trash2,
+} from "lucide-react";
 import { PageTreeItem } from "./PageTreeItem";
-import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
-import { PAGES_CHANGED_EVENT, type PageTreeNode, type WorkspaceSummary } from "@/types/page";
+import { TrashList } from "./TrashList";
+import { useWorkspace } from "@/components/workspace/WorkspaceContext";
+import { Dropdown, MenuDivider, MenuItem } from "@/components/ui/Dropdown";
 
-export function Sidebar({
-  workspaceId,
-  workspaces,
-  userName,
-  onOpenAiChat,
-}: {
-  workspaceId: string;
-  workspaces: WorkspaceSummary[];
-  userName: string;
-  onOpenAiChat: () => void;
-}) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const currentPageId = pathname?.match(/\/p\/([^/]+)/)?.[1];
-  const [pages, setPages] = useState<PageTreeNode[]>([]);
-
-  const fetchPages = useCallback(async () => {
-    const res = await fetch(`/api/workspaces/${workspaceId}/pages`, { cache: "no-store" });
-    if (res.ok) {
-      const data = await res.json();
-      setPages(data.pages);
+function useExpanded(workspaceId: string) {
+  const storageKey = `sidebar-expanded:${workspaceId}`;
+  const [expanded, setExpanded] = useState<Set<string>>(() => {
+    try {
+      return new Set(JSON.parse(localStorage.getItem(storageKey) ?? "[]"));
+    } catch {
+      return new Set();
     }
-  }, [workspaceId]);
+  });
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data fetch on mount
-    void fetchPages();
-    const handler = () => void fetchPages();
-    window.addEventListener(PAGES_CHANGED_EVENT, handler);
-    return () => window.removeEventListener(PAGES_CHANGED_EVENT, handler);
-  }, [fetchPages]);
+  const update = useCallback(
+    (fn: (prev: Set<string>) => Set<string>) => {
+      setExpanded((prev) => {
+        const next = fn(prev);
+        try {
+          localStorage.setItem(storageKey, JSON.stringify([...next]));
+        } catch {
+          // Storage can be unavailable (private mode); expansion just won't persist.
+        }
+        return next;
+      });
+    },
+    [storageKey],
+  );
 
-  const childrenByParent = useMemo(() => {
-    const map = new Map<string | null, PageTreeNode[]>();
-    for (const page of pages) {
-      const key = page.parentId;
-      const list = map.get(key) ?? [];
-      list.push(page);
-      map.set(key, list);
-    }
-    return map;
-  }, [pages]);
+  return [expanded, update] as const;
+}
 
-  const roots = childrenByParent.get(null) ?? [];
-
-  async function createRootPage() {
-    const res = await fetch(`/api/workspaces/${workspaceId}/pages`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({}),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      await fetchPages();
-      router.push(`/w/${workspaceId}/p/${data.page.id}`);
-    }
-  }
-
+function NavItem({ icon, label, hint, onClick }: { icon: ReactNode; label: string; hint?: string; onClick: () => void }) {
   return (
-    <aside className="flex h-full w-64 shrink-0 flex-col border-r border-zinc-200 bg-zinc-50">
-      <div className="p-2">
-        <WorkspaceSwitcher workspaces={workspaces} currentWorkspaceId={workspaceId} />
-      </div>
-
-      <div className="flex-1 overflow-y-auto px-2">
-        {roots.map((node) => (
-          <PageTreeItem
-            key={node.id}
-            node={node}
-            childrenByParent={childrenByParent}
-            workspaceId={workspaceId}
-            currentPageId={currentPageId}
-            depth={0}
-            onChanged={fetchPages}
-          />
-        ))}
-        <button
-          type="button"
-          onClick={createRootPage}
-          className="mt-1 flex w-full items-center gap-1 rounded-md px-2 py-1 text-sm text-zinc-500 hover:bg-zinc-100"
-        >
-          + New page
-        </button>
-      </div>
-
-      <div className="border-t border-zinc-200 p-2">
-        <button
-          type="button"
-          onClick={onOpenAiChat}
-          className="flex w-full items-center gap-1 rounded-md px-2 py-1.5 text-sm text-zinc-600 hover:bg-zinc-100"
-        >
-          ✨ Ask AI about workspace
-        </button>
-      </div>
-
-      <div className="flex items-center justify-between border-t border-zinc-200 p-2 text-sm text-zinc-500">
-        <span className="truncate">{userName}</span>
-        <button
-          type="button"
-          onClick={() => signOut({ callbackUrl: "/login" })}
-          className="shrink-0 rounded px-2 py-1 hover:bg-zinc-200"
-        >
-          Log out
-        </button>
-      </div>
-    </aside>
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex h-[30px] w-full items-center gap-2 rounded-md px-2 text-sm text-ink-2 hover:bg-hover"
+    >
+      <span className="flex w-5 justify-center">{icon}</span>
+      <span className="flex-1 text-left">{label}</span>
+      {hint && <span className="text-xs text-ink-3">{hint}</span>}
+    </button>
   );
 }
 
-export function notifyPagesChanged() {
-  window.dispatchEvent(new Event(PAGES_CHANGED_EVENT));
+export function Sidebar({ onCollapse }: { onCollapse: () => void }) {
+  const ws = useWorkspace();
+  const router = useRouter();
+  const pathname = usePathname();
+  const currentPageId = pathname?.match(/\/p\/([^/]+)/)?.[1];
+  const [expanded, setExpanded] = useExpanded(ws.workspaceId);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [rootDrop, setRootDrop] = useState(false);
+
+  const toggleExpanded = useCallback(
+    (id: string, open?: boolean) =>
+      setExpanded((prev) => {
+        const next = new Set(prev);
+        if (open ?? !next.has(id)) {
+          next.add(id);
+        } else {
+          next.delete(id);
+        }
+        return next;
+      }),
+    [setExpanded],
+  );
+
+  // Open the path down to the page you're on, like Notion does.
+  useEffect(() => {
+    if (!currentPageId) {
+      return;
+    }
+    const ancestors: string[] = [];
+    let cursor = ws.pagesById.get(currentPageId);
+    while (cursor?.parentId) {
+      ancestors.push(cursor.parentId);
+      cursor = ws.pagesById.get(cursor.parentId);
+    }
+    if (ancestors.some((id) => !expanded.has(id))) {
+      setExpanded((prev) => new Set([...prev, ...ancestors]));
+    }
+  }, [currentPageId, ws.pagesById, expanded, setExpanded]);
+
+  const roots = ws.childrenByParent.get(null) ?? [];
+  const favorites = ws.favoriteIds.map((id) => ws.pagesById.get(id)).filter((p) => p !== undefined);
+
+  async function createWorkspace() {
+    const name = window.prompt("Name your new workspace");
+    if (!name?.trim()) {
+      return;
+    }
+    const res = await fetch("/api/workspaces", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: name.trim() }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      router.push(`/w/${data.workspace.id}`);
+      router.refresh();
+    }
+  }
+
+  function onRootDragOver(e: DragEvent) {
+    if (!draggingId) {
+      return;
+    }
+    e.preventDefault();
+    setRootDrop(true);
+  }
+
+  async function onRootDrop(e: DragEvent) {
+    e.preventDefault();
+    setRootDrop(false);
+    const dragging = draggingId;
+    setDraggingId(null);
+    if (dragging) {
+      await ws.movePage(dragging, null, roots.filter((r) => r.id !== dragging).length);
+    }
+  }
+
+  const drag = { draggingId, setDraggingId };
+
+  return (
+    <aside className="group/sidebar flex h-full w-60 shrink-0 flex-col bg-sidebar">
+      <div className="flex items-center gap-1 px-2 pt-2">
+        <Dropdown
+          wrapperClassName="relative min-w-0 flex-1"
+          className="w-64"
+          trigger={({ toggle }) => (
+            <button
+              type="button"
+              onClick={toggle}
+              className="flex h-8 w-full min-w-0 items-center gap-2 rounded-md px-1.5 text-sm font-medium hover:bg-hover"
+            >
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-ink-3 text-[11px] font-semibold text-white">
+                {ws.workspaceName.charAt(0).toUpperCase()}
+              </span>
+              <span className="truncate">{ws.workspaceName}</span>
+              <ChevronDown size={14} className="shrink-0 text-ink-3" />
+            </button>
+          )}
+        >
+          {(close) => (
+            <>
+              <p className="px-3 pt-1 pb-1.5 text-xs text-ink-3">{ws.userName}</p>
+              {ws.workspaces.map((w) => (
+                <MenuItem
+                  key={w.id}
+                  icon={
+                    <span className="flex h-5 w-5 items-center justify-center rounded bg-ink-3 text-[11px] font-semibold text-white">
+                      {w.name.charAt(0).toUpperCase()}
+                    </span>
+                  }
+                  hint={w.id === ws.workspaceId ? "✓" : undefined}
+                  onClick={() => {
+                    close();
+                    router.push(`/w/${w.id}`);
+                  }}
+                >
+                  {w.name}
+                </MenuItem>
+              ))}
+              <MenuItem
+                icon={<Plus size={15} />}
+                onClick={() => {
+                  close();
+                  void createWorkspace();
+                }}
+              >
+                New workspace
+              </MenuItem>
+              <MenuDivider />
+              <MenuItem icon={<LogOut size={15} />} onClick={() => void signOut({ callbackUrl: "/login" })}>
+                Log out
+              </MenuItem>
+            </>
+          )}
+        </Dropdown>
+        <button
+          type="button"
+          onClick={onCollapse}
+          title="Close sidebar"
+          className="flex h-7 w-7 items-center justify-center rounded-md text-ink-3 opacity-0 hover:bg-hover group-hover/sidebar:opacity-100"
+        >
+          <ChevronsLeft size={18} />
+        </button>
+        <button
+          type="button"
+          onClick={() => void ws.createPage(null)}
+          title="New page"
+          className="flex h-7 w-7 items-center justify-center rounded-md text-ink-2 hover:bg-hover"
+        >
+          <SquarePen size={16} />
+        </button>
+      </div>
+
+      <nav className="px-2 pt-1 pb-2">
+        <NavItem icon={<Search size={16} />} label="Search" hint="Ctrl K" onClick={ws.openSearch} />
+        <NavItem icon={<Sparkles size={16} />} label="Ask AI" onClick={ws.openChat} />
+        <NavItem icon={<Settings size={16} />} label="Settings & members" onClick={ws.openSettings} />
+      </nav>
+
+      <div className="flex-1 overflow-y-auto px-2 pb-2">
+        {favorites.length > 0 && (
+          <section className="mb-3">
+            <p className="px-2 pb-1 text-xs font-medium text-ink-3">Favorites</p>
+            {favorites.map((page) => (
+              <Link
+                key={page.id}
+                href={`/w/${ws.workspaceId}/p/${page.id}`}
+                className={`flex h-[30px] items-center gap-2 rounded-md px-2 text-sm ${
+                  page.id === currentPageId ? "bg-hover font-medium text-ink" : "text-ink-2 hover:bg-hover"
+                }`}
+              >
+                <span className="flex w-5 justify-center">{page.icon || <FileText size={16} />}</span>
+                <span className="truncate">{page.title || "Untitled"}</span>
+              </Link>
+            ))}
+          </section>
+        )}
+
+        <section>
+          <div
+            onDragOver={onRootDragOver}
+            onDragLeave={() => setRootDrop(false)}
+            onDrop={onRootDrop}
+            className={`group/pages flex h-7 items-center rounded-md px-2 ${rootDrop ? "bg-accent/15" : ""}`}
+          >
+            <p className="flex-1 text-xs font-medium text-ink-3">Pages</p>
+            <button
+              type="button"
+              onClick={() => void ws.createPage(null)}
+              title="Add a page"
+              className="flex h-5 w-5 items-center justify-center rounded text-ink-3 opacity-0 hover:bg-hover group-hover/pages:opacity-100"
+            >
+              <Plus size={14} />
+            </button>
+          </div>
+          {roots.map((node) => (
+            <PageTreeItem
+              key={node.id}
+              node={node}
+              depth={0}
+              currentPageId={currentPageId}
+              expanded={expanded}
+              toggleExpanded={toggleExpanded}
+              drag={drag}
+            />
+          ))}
+          <button
+            type="button"
+            onClick={() => void ws.createPage(null)}
+            className="flex h-[30px] w-full items-center gap-2 rounded-md px-2 text-sm text-ink-3 hover:bg-hover"
+          >
+            <Plus size={16} className="mx-0.5" /> Add a page
+          </button>
+        </section>
+      </div>
+
+      <div className="border-t border-line p-2">
+        <Dropdown
+          side="top"
+          className="py-2"
+          trigger={({ toggle }) => (
+            <NavItem icon={<Trash2 size={16} />} label="Trash" onClick={toggle} />
+          )}
+        >
+          {(close) => <TrashList close={close} />}
+        </Dropdown>
+      </div>
+    </aside>
+  );
 }

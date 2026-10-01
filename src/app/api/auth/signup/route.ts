@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { blocksToPlainText } from "@/lib/ai/rag";
 
 const signupSchema = z.object({
   name: z.string().min(1).max(80),
@@ -39,9 +40,11 @@ export async function POST(request: Request) {
     await tx.page.create({
       data: {
         workspaceId: workspace.id,
-        title: "Welcome",
+        title: "Getting started",
+        icon: "👋",
         createdById: user.id,
         content: WELCOME_CONTENT,
+        plainText: blocksToPlainText(WELCOME_CONTENT),
       },
     });
   });
@@ -51,18 +54,23 @@ export async function POST(request: Request) {
 
 const WELCOME_CONTENT = [
   {
-    type: "heading",
-    props: { level: 1 },
-    content: [{ type: "text", text: "Welcome to your workspace", styles: {} }],
+    type: "paragraph",
+    content: [{ type: "text", text: "This is your first page. A few things to try:", styles: {} }],
   },
   {
-    type: "paragraph",
-    content: [
-      {
-        type: "text",
-        text: "This is your first page. Type '/' for commands, or select some text to ask AI to help you write.",
-        styles: {},
-      },
-    ],
+    type: "bulletListItem",
+    content: [{ type: "text", text: "Press space on an empty line to ask AI to write for you.", styles: {} }],
+  },
+  {
+    type: "bulletListItem",
+    content: [{ type: "text", text: "Select some text and click ✨ Ask AI to rewrite, shorten or translate it.", styles: {} }],
+  },
+  {
+    type: "bulletListItem",
+    content: [{ type: "text", text: "Type '/' to add headings, to-do lists, tables, images and more.", styles: {} }],
+  },
+  {
+    type: "bulletListItem",
+    content: [{ type: "text", text: "Press Ctrl+K to search, and drag pages in the sidebar to reorganize them.", styles: {} }],
   },
 ];

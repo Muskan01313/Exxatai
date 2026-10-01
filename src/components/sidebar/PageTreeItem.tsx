@@ -1,61 +1,93 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
 import Link from "next/link";
+import { useState, type DragEvent } from "react";
+import { ChevronRight, Copy, Ellipsis, FileText, Link as LinkIcon, PenLine, Plus, Star, Trash2 } from "lucide-react";
+import { useWorkspace } from "@/components/workspace/WorkspaceContext";
+import { Dropdown, MenuDivider, MenuItem } from "@/components/ui/Dropdown";
 import type { PageTreeNode } from "@/types/page";
+
+type DropZone = "before" | "inside" | "after";
+
+export interface TreeDragState {
+  draggingId: string | null;
+  setDraggingId: (id: string | null) => void;
+}
 
 export function PageTreeItem({
   node,
-  childrenByParent,
-  workspaceId,
-  currentPageId,
   depth,
-  onChanged,
+  currentPageId,
+  expanded,
+  toggleExpanded,
+  drag,
 }: {
   node: PageTreeNode;
-  childrenByParent: Map<string | null, PageTreeNode[]>;
-  workspaceId: string;
-  currentPageId?: string;
   depth: number;
-  onChanged: () => void;
+  currentPageId?: string;
+  expanded: Set<string>;
+  toggleExpanded: (id: string, open?: boolean) => void;
+  drag: TreeDragState;
 }) {
-  const router = useRouter();
-  const children = childrenByParent.get(node.id) ?? [];
-  const [expanded, setExpanded] = useState(true);
+  const ws = useWorkspace();
+  const children = ws.childrenByParent.get(node.id) ?? [];
+  const isOpen = expanded.has(node.id);
+  const isActive = node.id === currentPageId;
+  const isFavorite = ws.favoriteIds.includes(node.id);
   const [renaming, setRenaming] = useState(false);
   const [title, setTitle] = useState(node.title);
-  const isActive = node.id === currentPageId;
+  const [dropZone, setDropZone] = useState<DropZone | null>(null);
 
-  async function addSubpage(e: React.MouseEvent) {
-    e.preventDefault();
-    e.stopPropagation();
-    const res = await fetch(`/api/workspaces/${workspaceId}/pages`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ parentId: node.id }),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      setExpanded(true);
-      onChanged();
-      router.push(`/w/${workspaceId}/p/${data.page.id}`);
+  function isInvalidTarget() {
+    const dragging = drag.draggingId;
+    if (!dragging) {
+      return true;
     }
+    // Can't drop a page onto itself or into one of its own sub-pages.
+    let cursor: PageTreeNode | undefined = node;
+    while (cursor) {
+      if (cursor.id === dragging) {
+        return true;
+      }
+      cursor = cursor.parentId ? ws.pagesById.get(cursor.parentId) : undefined;
+    }
+    return false;
   }
 
-  async function deletePage(e: React.MouseEvent) {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!window.confirm(`Delete "${node.title}" and all its sub-pages?`)) {
+  function zoneFor(e: DragEvent): DropZone {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    return y < rect.height * 0.25 ? "before" : y > rect.height * 0.75 ? "after" : "inside";
+  }
+
+  function onDragOver(e: DragEvent) {
+    if (isInvalidTarget()) {
       return;
     }
-    const res = await fetch(`/api/pages/${node.id}`, { method: "DELETE" });
-    if (res.ok) {
-      onChanged();
-      if (isActive) {
-        router.push(`/w/${workspaceId}`);
-      }
+    e.preventDefault();
+    e.stopPropagation();
+    setDropZone(zoneFor(e));
+  }
+
+  async function onDrop(e: DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    // Read the zone from the drop itself; the hover state may not have updated on a quick drag.
+    const zone = zoneFor(e);
+    setDropZone(null);
+    const dragging = drag.draggingId;
+    drag.setDraggingId(null);
+    if (!dragging || !zone || isInvalidTarget()) {
+      return;
     }
+    if (zone === "inside") {
+      toggleExpanded(node.id, true);
+      await ws.movePage(dragging, node.id, children.filter((c) => c.id !== dragging).length);
+      return;
+    }
+    const siblings = (ws.childrenByParent.get(node.parentId) ?? []).filter((s) => s.id !== dragging);
+    const index = siblings.findIndex((s) => s.id === node.id);
+    await ws.movePage(dragging, node.parentId, zone === "before" ? index : index + 1);
   }
 
   async function commitRename() {
@@ -65,30 +97,55 @@ export function PageTreeItem({
     if (trimmed === node.title) {
       return;
     }
+    ws.patchPageLocally(node.id, { title: trimmed });
     await fetch(`/api/pages/${node.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title: trimmed }),
     });
-    onChanged();
   }
 
   return (
     <div>
       <div
-        className={`group flex items-center gap-1 rounded-md px-2 py-1 text-sm ${
-          isActive ? "bg-zinc-200 text-zinc-900" : "text-zinc-700 hover:bg-zinc-100"
+        draggable={!renaming}
+        onDragStart={(e) => {
+          e.dataTransfer.effectAllowed = "move";
+          e.dataTransfer.setData("text/plain", node.id);
+          drag.setDraggingId(node.id);
+        }}
+        onDragEnd={() => {
+          drag.setDraggingId(null);
+          setDropZone(null);
+        }}
+        onDragOver={onDragOver}
+        onDragLeave={() => setDropZone(null)}
+        onDrop={onDrop}
+        className={`group relative flex h-[30px] items-center rounded-md pr-1 text-sm ${
+          isActive ? "bg-hover font-medium text-ink" : "text-ink-2 hover:bg-hover"
+        } ${dropZone === "inside" ? "bg-accent/15 ring-1 ring-accent/40" : ""} ${
+          drag.draggingId === node.id ? "opacity-40" : ""
         }`}
-        style={{ paddingLeft: 8 + depth * 14 }}
+        style={{ paddingLeft: 6 + depth * 14 }}
       >
+        {dropZone === "before" && <div className="absolute inset-x-1 top-0 h-0.5 rounded bg-accent" />}
+        {dropZone === "after" && <div className="absolute inset-x-1 bottom-0 h-0.5 rounded bg-accent" />}
+
         <button
           type="button"
-          onClick={() => setExpanded((v) => !v)}
-          className="flex h-4 w-4 shrink-0 items-center justify-center text-zinc-400"
+          onClick={() => toggleExpanded(node.id)}
+          className="relative flex h-6 w-6 shrink-0 items-center justify-center rounded hover:bg-hover"
+          aria-label={isOpen ? "Collapse" : "Expand"}
         >
-          {children.length > 0 ? (expanded ? "▾" : "▸") : ""}
+          <span className="group-hover:invisible">
+            {node.icon ? <span className="text-[15px] leading-none">{node.icon}</span> : <FileText size={16} />}
+          </span>
+          <ChevronRight
+            size={15}
+            className={`invisible absolute text-ink-3 transition-transform group-hover:visible ${isOpen ? "rotate-90" : ""}`}
+          />
         </button>
-        <span className="shrink-0">{node.icon || "📄"}</span>
+
         {renaming ? (
           <input
             autoFocus
@@ -96,60 +153,133 @@ export function PageTreeItem({
             onChange={(e) => setTitle(e.target.value)}
             onBlur={commitRename}
             onKeyDown={(e) => {
-              if (e.key === "Enter") commitRename();
+              if (e.key === "Enter") {
+                void commitRename();
+              }
               if (e.key === "Escape") {
                 setTitle(node.title);
                 setRenaming(false);
               }
             }}
-            className="min-w-0 flex-1 rounded border border-zinc-300 bg-white px-1 text-sm outline-none"
+            className="ml-1 min-w-0 flex-1 rounded border border-accent/60 bg-white px-1 text-sm text-ink outline-none"
           />
         ) : (
           <Link
-            href={`/w/${workspaceId}/p/${node.id}`}
+            href={`/w/${ws.workspaceId}/p/${node.id}`}
             onDoubleClick={(e) => {
               e.preventDefault();
+              setTitle(node.title);
               setRenaming(true);
             }}
-            className="min-w-0 flex-1 truncate"
+            className="ml-1 min-w-0 flex-1 truncate"
+            draggable={false}
           >
             {node.title || "Untitled"}
           </Link>
         )}
-        <div className="ml-auto hidden shrink-0 items-center gap-1 group-hover:flex">
+
+        <div className="ml-auto hidden shrink-0 items-center group-hover:flex has-[[data-open=true]]:flex">
+          <Dropdown
+            align="left"
+            className="w-56"
+            trigger={({ open, toggle }) => (
+              <button
+                type="button"
+                data-open={open}
+                onClick={toggle}
+                aria-label="Page options"
+                className="flex h-6 w-6 items-center justify-center rounded text-ink-3 hover:bg-hover hover:text-ink"
+              >
+                <Ellipsis size={16} />
+              </button>
+            )}
+          >
+            {(close) => (
+              <>
+                <MenuItem
+                  icon={<Star size={15} />}
+                  onClick={() => {
+                    close();
+                    void ws.toggleFavorite(node.id);
+                  }}
+                >
+                  {isFavorite ? "Remove from Favorites" : "Add to Favorites"}
+                </MenuItem>
+                <MenuDivider />
+                <MenuItem
+                  icon={<LinkIcon size={15} />}
+                  onClick={() => {
+                    close();
+                    void ws.copyPageLink(node.id);
+                  }}
+                >
+                  Copy link
+                </MenuItem>
+                <MenuItem
+                  icon={<Copy size={15} />}
+                  onClick={() => {
+                    close();
+                    void ws.duplicatePage(node.id);
+                  }}
+                >
+                  Duplicate
+                </MenuItem>
+                <MenuItem
+                  icon={<PenLine size={15} />}
+                  onClick={() => {
+                    close();
+                    setTitle(node.title);
+                    setRenaming(true);
+                  }}
+                >
+                  Rename
+                </MenuItem>
+                <MenuDivider />
+                <MenuItem
+                  danger
+                  icon={<Trash2 size={15} />}
+                  onClick={() => {
+                    close();
+                    void ws.trashPage(node.id, currentPageId);
+                  }}
+                >
+                  Move to Trash
+                </MenuItem>
+              </>
+            )}
+          </Dropdown>
           <button
             type="button"
-            onClick={addSubpage}
-            title="Add sub-page"
-            className="rounded px-1 text-zinc-400 hover:bg-zinc-200 hover:text-zinc-700"
+            onClick={() => {
+              toggleExpanded(node.id, true);
+              void ws.createPage(node.id);
+            }}
+            aria-label="Add a page inside"
+            className="flex h-6 w-6 items-center justify-center rounded text-ink-3 hover:bg-hover hover:text-ink"
           >
-            +
-          </button>
-          <button
-            type="button"
-            onClick={deletePage}
-            title="Delete"
-            className="rounded px-1 text-zinc-400 hover:bg-zinc-200 hover:text-zinc-700"
-          >
-            ×
+            <Plus size={16} />
           </button>
         </div>
       </div>
-      {expanded && children.length > 0 && (
-        <div>
-          {children.map((child) => (
+
+      {isOpen &&
+        (children.length > 0 ? (
+          children.map((child) => (
             <PageTreeItem
               key={child.id}
               node={child}
-              childrenByParent={childrenByParent}
-              workspaceId={workspaceId}
-              currentPageId={currentPageId}
               depth={depth + 1}
-              onChanged={onChanged}
+              currentPageId={currentPageId}
+              expanded={expanded}
+              toggleExpanded={toggleExpanded}
+              drag={drag}
             />
-          ))}
-        </div>
-      )}
+          ))
+        ) : (
+          <div className="py-1 text-xs text-ink-3" style={{ paddingLeft: 34 + depth * 14 }}>
+            No pages inside
+          </div>
+        ))}
     </div>
   );
 }

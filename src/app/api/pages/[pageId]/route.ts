@@ -2,75 +2,75 @@ import { NextResponse, after } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@/generated/prisma/client";
-import { getCurrentUserId } from "@/lib/session";
-import { getPageForUser } from "@/lib/workspace";
-import { indexPage } from "@/lib/ai/rag";
+import { requirePageAccess, jsonError } from "@/lib/api";
+import { blocksToPlainText, indexPage } from "@/lib/ai/rag";
 
-export async function GET(_request: Request, { params }: { params: Promise<{ pageId: string }> }) {
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+type Params = { params: Promise<{ pageId: string }> };
+
+export async function GET(_request: Request, { params }: Params) {
+  const access = await requirePageAccess((await params).pageId);
+  if (access instanceof Response) {
+    return access;
   }
-
-  const { pageId } = await params;
-  const page = await getPageForUser(pageId, userId);
-  if (!page) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-
-  return NextResponse.json({ page });
+  return NextResponse.json({ page: access.page });
 }
 
-const updatePageSchema = z.object({
-  title: z.string().max(200).optional(),
-  icon: z.string().max(16).nullable().optional(),
-  content: z.array(z.record(z.string(), z.unknown())).optional(),
-  parentId: z.string().uuid().nullable().optional(),
-  order: z.number().int().optional(),
-});
+const coverSchema = z
+  .string()
+  .max(2048)
+  .refine((v) => v.startsWith("preset:") || v.startsWith("https://"), "Cover must be a preset or an https URL");
 
-export async function PATCH(request: Request, { params }: { params: Promise<{ pageId: string }> }) {
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+const updatePageSchema = z
+  .object({
+    title: z.string().max(200).optional(),
+    icon: z.string().max(16).nullable().optional(),
+    cover: coverSchema.nullable().optional(),
+    isPublic: z.boolean().optional(),
+    content: z.array(z.record(z.string(), z.unknown())).optional(),
+    baseVersion: z.number().int().optional(),
+  })
+  .refine((d) => d.content === undefined || d.baseVersion !== undefined, "baseVersion is required with content");
 
+export async function PATCH(request: Request, { params }: Params) {
   const { pageId } = await params;
-  const page = await getPageForUser(pageId, userId);
-  if (!page) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const access = await requirePageAccess(pageId);
+  if (access instanceof Response) {
+    return access;
   }
 
-  const body = await request.json().catch(() => ({}));
-  const parsed = updatePageSchema.safeParse(body);
+  const parsed = updatePageSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+    return jsonError("Invalid input", 400);
   }
+  const { title, icon, cover, isPublic, content, baseVersion } = parsed.data;
 
-  const { title, icon, content, parentId, order } = parsed.data;
-
-  if (parentId !== undefined && parentId !== null) {
-    if (parentId === pageId) {
-      return NextResponse.json({ error: "A page cannot be its own parent" }, { status: 400 });
-    }
-    const parent = await prisma.page.findUnique({ where: { id: parentId } });
-    if (!parent || parent.workspaceId !== page.workspaceId) {
-      return NextResponse.json({ error: "Invalid parent page" }, { status: 400 });
-    }
-  }
-
-  const data: Prisma.PageUncheckedUpdateInput = {
-    ...(title !== undefined ? { title: title || "Untitled" } : {}),
+  const data: Prisma.PageUpdateManyMutationInput = {
+    ...(title !== undefined ? { title: title.trim() || "Untitled" } : {}),
     ...(icon !== undefined ? { icon } : {}),
-    ...(content !== undefined ? { content: content as Prisma.InputJsonValue } : {}),
-    ...(parentId !== undefined ? { parentId } : {}),
-    ...(order !== undefined ? { order } : {}),
+    ...(cover !== undefined ? { cover } : {}),
+    ...(isPublic !== undefined ? { isPublic } : {}),
   };
 
-  const updated = await prisma.page.update({
-    where: { id: pageId },
+  if (content !== undefined) {
+    data.content = content as Prisma.InputJsonValue;
+    data.plainText = blocksToPlainText(content);
+    data.contentVersion = { increment: 1 };
+  }
+
+  // Only apply a content save if nobody else saved since this client loaded the page.
+  const result = await prisma.page.updateMany({
+    where: { id: pageId, ...(content !== undefined ? { contentVersion: baseVersion } : {}) },
     data,
   });
+
+  const page = await prisma.page.findUniqueOrThrow({ where: { id: pageId } });
+
+  if (result.count === 0) {
+    return NextResponse.json(
+      { error: "This page was changed by someone else.", contentVersion: page.contentVersion },
+      { status: 409 },
+    );
+  }
 
   if (content !== undefined) {
     after(() =>
@@ -80,22 +80,15 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ pa
     );
   }
 
-  return NextResponse.json({ page: updated });
+  return NextResponse.json({ page });
 }
 
-export async function DELETE(_request: Request, { params }: { params: Promise<{ pageId: string }> }) {
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export async function DELETE(_request: Request, { params }: Params) {
   const { pageId } = await params;
-  const page = await getPageForUser(pageId, userId);
-  if (!page) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const access = await requirePageAccess(pageId);
+  if (access instanceof Response) {
+    return access;
   }
-
   await prisma.page.delete({ where: { id: pageId } });
-
   return NextResponse.json({ ok: true });
 }

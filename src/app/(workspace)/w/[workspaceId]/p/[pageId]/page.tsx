@@ -22,11 +22,17 @@ export default async function PageView({
   return (
     <PageEditorClient
       key={page.id}
-      pageId={page.id}
-      workspaceId={workspaceId}
-      initialTitle={page.title}
-      initialIcon={page.icon}
-      initialContent={page.content}
+      page={{
+        id: page.id,
+        title: page.title,
+        icon: page.icon,
+        cover: page.cover,
+        content: page.content,
+        contentVersion: page.contentVersion,
+        isPublic: page.isPublic,
+        updatedAt: page.updatedAt.toISOString(),
+        deletedAt: page.deletedAt?.toISOString() ?? null,
+      }}
     />
   );
 }

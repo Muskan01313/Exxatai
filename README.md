@@ -5,12 +5,32 @@ AI Q&A over your own notes — your own copy of "Notion AI".
 
 ## Features
 
-- **Block-based editor** — headings, lists, to-dos, code blocks, drag-to-reorder, slash commands (via [BlockNote](https://www.blocknotejs.org/)).
-- **Workspace & page tree** — nested pages, sidebar navigation, create/rename/move/delete.
-- **AI writing assistant** — select text and ask AI to continue writing, improve it, fix grammar, make it shorter/longer, summarize, brainstorm, etc. Available from a toolbar button or the `/` slash menu ("Ask AI").
-- **AI Q&A over your workspace** — a chat panel that answers questions using your own pages as context (RAG: pages are chunked + embedded on save, retrieved by similarity at query time).
-- **Accounts** — email/password auth, each user gets their own workspace(s).
-- **Swappable AI provider** — text generation works with either OpenAI or Anthropic; embeddings work with either OpenAI or Voyage AI. Switch via environment variables, no code changes.
+**Inline AI, the way Notion does it**
+- Press **space** on an empty line, type `/ai`, or press **Ctrl/⌘+J** to open the AI panel right under your cursor.
+- Select text and click **✨ Ask AI** in the toolbar to improve writing, fix spelling and grammar, make it shorter or longer, simplify, change tone, translate, explain or summarize.
+- Answers stream in formatted. Then choose **Replace selection**, **Insert below**, **Continue writing**, **Make longer**, **Try again** or **Discard**, or type a follow-up instruction.
+- **Ask AI about your workspace**: a chat panel that answers from your own pages, with links to the pages it used.
+
+**Editor and pages**
+- Block editor with headings, lists, to-dos, tables, code, images and more, plus slash commands and block drag handles ([BlockNote](https://www.blocknotejs.org/)).
+- Cover images (color and gradient presets, or any image link), emoji page icons, and titles that wrap.
+- A top bar with breadcrumbs, save status, Share, Favorites and a page menu.
+- Autosave that detects when someone else saved the page while you had it open, instead of silently overwriting their work.
+
+**Sidebar**
+- Nested pages you can drag to reorder or drop onto another page to nest them.
+- A **⋯** menu on each page: Favorite, Copy link, Duplicate (with sub-pages), Rename, Move to Trash.
+- Favorites, **Trash** (restore or delete permanently), and **Search** (Ctrl/⌘+K) across titles and page text.
+- A workspace switcher, and a collapsible sidebar (Ctrl/⌘+\\) that slides in from the side on phones.
+
+**Teamwork**
+- Invite colleagues with a workspace invite link. The owner can reset the link or remove members.
+- **Share to web**: publish any page as a read-only public link.
+- Page comments.
+
+**Under the hood**
+- Email/password accounts. Each user gets their own workspace and can create more.
+- Swappable AI providers: text generation with OpenAI or Anthropic, embeddings with OpenAI or Voyage AI, chosen by environment variable with no code changes.
 
 ## Tech stack
 
@@ -87,9 +107,14 @@ src/app/api/
   ai/assist                         Streaming writing-assistant endpoint
   ai/chat                           Streaming RAG Q&A endpoint
 src/components/
-  sidebar/                     Workspace switcher + recursive page tree
-  editor/                      BlockNote wrapper, autosave, slash menu
-  ai/                          AI assist panel + AI chat panel
+  workspace/                   Shared workspace state, shell, search and settings dialogs
+  sidebar/                     Page tree with drag and drop, page menu, trash
+  page/                        Top bar, cover and icon pickers, comments
+  editor/                      BlockNote wrapper, autosave with conflict detection
+  ai/                          Inline AI panel, selection toolbar button, workspace chat
+  ui/                          Dropdown, menu and modal primitives
+src/app/s/[pageId]             Public read-only pages ("Share to web")
+src/app/invite/[token]         Workspace invite links
 ```
 
 ## Switching AI providers

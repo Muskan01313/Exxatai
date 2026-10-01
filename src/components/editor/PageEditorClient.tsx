@@ -2,10 +2,8 @@
 
 import dynamic from "next/dynamic";
 
-export const PageEditorClient = dynamic(
-  () => import("./PageEditor").then((mod) => mod.PageEditor),
-  {
-    ssr: false,
-    loading: () => <div className="mx-auto max-w-3xl px-16 py-12 text-sm text-zinc-400">Loading…</div>,
-  },
-);
+// BlockNote touches `window` while creating the editor, so it can only render in the browser.
+export const PageEditorClient = dynamic(() => import("./PageEditor").then((mod) => mod.PageEditor), {
+  ssr: false,
+  loading: () => <div className="h-11" />,
+});

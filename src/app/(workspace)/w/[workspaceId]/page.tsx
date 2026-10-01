@@ -10,7 +10,7 @@ export default async function WorkspaceHomePage({
   const { workspaceId } = await params;
 
   const firstPage = await prisma.page.findFirst({
-    where: { workspaceId, parentId: null },
+    where: { workspaceId, parentId: null, deletedAt: null },
     orderBy: [{ order: "asc" }, { createdAt: "asc" }],
   });
 
@@ -18,5 +18,5 @@ export default async function WorkspaceHomePage({
     redirect(`/w/${workspaceId}/p/${firstPage.id}`);
   }
 
-  return <EmptyWorkspaceState workspaceId={workspaceId} />;
+  return <EmptyWorkspaceState />;
 }

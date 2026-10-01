@@ -132,7 +132,7 @@ export async function retrieveRelevantChunks(
   }
 
   const chunks = await prisma.pageChunk.findMany({
-    where: { page: { workspaceId } },
+    where: { page: { workspaceId, deletedAt: null } },
     include: { page: { select: { title: true } } },
   });
 

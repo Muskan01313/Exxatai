@@ -1,26 +1,76 @@
 @import "tailwindcss";
 
+/* Notion's own palette and system font stack. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ink: #37352f;
+  --ink-2: rgba(55, 53, 47, 0.65);
+  --ink-3: rgba(55, 53, 47, 0.45);
+  --line: rgba(55, 53, 47, 0.09);
+  --hover: rgba(55, 53, 47, 0.08);
+  --sidebar: #f7f7f5;
+  --accent: #2383e2;
+  --danger: #eb5757;
+  --font-notion: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI",
+    Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-hover: var(--hover);
+  --color-sidebar: var(--sidebar);
+  --color-accent: var(--accent);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-notion);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --shadow-menu: rgba(15, 15, 15, 0.05) 0 0 0 1px, rgba(15, 15, 15, 0.1) 0 3px 6px, rgba(15, 15, 15, 0.2) 0 9px 24px;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: #fff;
+  color: var(--ink);
+  font-family: var(--font-notion);
 }
+
+/* Editor: Notion text color, font and block rhythm. */
+.notion-editor .bn-editor {
+  font-family: var(--font-notion);
+  color: var(--ink);
+}
+.notion-editor .bn-default-styles {
+  font-family: var(--font-notion);
+  font-size: 16px;
+  line-height: 1.5;
+}
+.notion-editor [data-content-type="heading"] {
+  padding-top: 1.1em;
+}
+.notion-editor [data-content-type="quote"] blockquote {
+  color: var(--ink);
+  border-left: 3px solid currentColor;
+}
+
+/* Phones have no hover drag handles, so give the text the full width. */
+@media (max-width: 639px) {
+  .notion-editor .bn-editor {
+    padding-inline: 0;
+  }
+}
+
+/* The AI panel replaces the selection toolbar while it's open. */
+.notion-editor[data-ai-open="true"] .bn-formatting-toolbar {
+  display: none;
+}
+
+/* AI answer preview rendered from the model's markdown. */
+.ai-preview h1 { font-size: 1.6em; font-weight: 700; margin: 0.4em 0; }
+.ai-preview h2 { font-size: 1.3em; font-weight: 700; margin: 0.4em 0; }
+.ai-preview h3 { font-size: 1.1em; font-weight: 600; margin: 0.4em 0; }
+.ai-preview p { margin: 0.25em 0; }
+.ai-preview ul { list-style: disc; padding-left: 1.5em; margin: 0.25em 0; }
+.ai-preview ol { list-style: decimal; padding-left: 1.5em; margin: 0.25em 0; }
+.ai-preview code { background: rgba(135, 131, 120, 0.15); border-radius: 4px; padding: 0.1em 0.3em; font-size: 0.85em; }
+.ai-preview pre { background: #f7f6f3; border-radius: 4px; padding: 0.75em 1em; overflow-x: auto; }
+.ai-preview blockquote { border-left: 3px solid currentColor; padding-left: 0.9em; }
