@@ -36,7 +36,6 @@ AI Q&A over your own notes — your own copy of "Notion AI".
   - A bell in the sidebar with a count of what's overdue or due within a day.
   - A pop-up card and a desktop notification when a reminder time arrives, while the app is open in a tab.
   - A private calendar link you add once to Google Calendar or Outlook.
-  - An optional morning email listing what's due today and tomorrow, plus anything overdue.
 
 **Under the hood**
 - Email/password accounts. Each user gets their own workspace and can create more.
@@ -101,20 +100,6 @@ Open [http://localhost:3000](http://localhost:3000), sign up, and start writing.
 
 The `vercel-build` script runs the database migrations on every deploy. Don't set `NEXTAUTH_URL` on Vercel; the site address is detected automatically.
 
-### Tracker reminder emails (optional)
-
-The bell, desktop pop-ups and calendar link work with no setup. For the morning email:
-
-1. Create a free account at [resend.com](https://resend.com) and make an API key.
-2. In Vercel, under **Settings → Environment Variables**, add:
-   - `RESEND_API_KEY`: the key from step 1.
-   - `CRON_SECRET`: any long random string. Vercel sends it when it runs the daily job, so nobody else can trigger the emails.
-   - `REMINDER_FROM_EMAIL` (optional): for example `Tracker <reminders@yourcompany.com>`. Until you verify your own domain in Resend, emails come from Resend's test address and only reach the email you signed up to Resend with.
-   - `APP_URL` (optional): the address used for links in emails. It defaults to your Vercel production address.
-3. Redeploy.
-
-The daily job is set in `vercel.json` to run at 02:30 UTC (8:00 in India). Each person gets at most one email a day, with times shown in their own time zone, which the app picks up from their browser.
-
 ## Project structure
 
 ```
@@ -132,7 +117,6 @@ src/app/api/
   ai/chat                           Streaming RAG Q&A endpoint
   workspaces/[id]/tracker, tracker/ Tracker tasks, timer, reminders and settings
   calendar/[token]                  Private calendar feed (.ics) for Google/Outlook
-  cron/reminders                    Daily reminder email (Vercel Cron)
 src/components/
   workspace/                   Shared workspace state, shell, search and settings dialogs
   sidebar/                     Page tree with drag and drop, page menu, trash
@@ -160,5 +144,4 @@ those two functions — no other code needs to change.
   corpus, swap `retrieveRelevantChunks` in `src/lib/ai/rag.ts` for a real
   vector index (e.g. pgvector) without changing any calling code.
 - Deleting a page deletes its sub-pages too (cascading).
-- Desktop pop-ups need the app open in a browser tab. For reminders when it's closed, use the calendar link or the
-  morning email. Google Calendar refreshes subscribed calendars slowly (up to a day), and Outlook every few hours.
+- Desktop pop-ups need the app open in a browser tab. For reminders when it's closed, use the calendar link. Google Calendar refreshes subscribed calendars slowly (up to a day), and Outlook every few hours.

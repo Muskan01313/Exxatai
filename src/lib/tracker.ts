@@ -6,26 +6,6 @@ import type { TrackerTask } from "@/types/tracker";
 export const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 export const daySchema = z.string().regex(DAY_PATTERN, "Expected a date like 2026-10-01");
 
-export function isValidTimeZone(tz: string): boolean {
-  try {
-    new Intl.DateTimeFormat("en-US", { timeZone: tz });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-/** The calendar date (YYYY-MM-DD) that an instant falls on in the given time zone. */
-export function localDay(date: Date, timeZone: string): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).format(date);
-}
-
-export function addDays(day: string, days: number): string {
-  const d = new Date(`${day}T12:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + days);
-  return d.toISOString().slice(0, 10);
-}
-
 export function entrySeconds(entry: { startedAt: Date; endedAt: Date | null }, now = new Date()): number {
   const end = entry.endedAt ?? now;
   return Math.max(0, Math.round((end.getTime() - entry.startedAt.getTime()) / 1000));

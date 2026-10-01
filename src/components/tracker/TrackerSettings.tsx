@@ -1,15 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bell, CalendarPlus, Mail, RefreshCw, X } from "lucide-react";
+import { Bell, CalendarPlus, RefreshCw, X } from "lucide-react";
 import { Modal } from "@/components/ui/Dropdown";
 
 interface Settings {
-  email: string;
-  timezone: string;
-  emailReminders: boolean;
   calendarPath: string | null;
-  emailConfigured: boolean;
 }
 
 function notificationState(): NotificationPermission | "unsupported" {
@@ -78,15 +74,6 @@ export function TrackerSettings({ onClose }: { onClose: () => void }) {
     setBusy(false);
   }
 
-  async function setEmail(emailReminders: boolean) {
-    setSettings((s) => (s ? { ...s, emailReminders } : s));
-    await fetch("/api/tracker/settings", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ emailReminders }),
-    });
-  }
-
   const feedUrl = settings?.calendarPath ? `${window.location.origin}${settings.calendarPath}` : null;
 
   return (
@@ -107,7 +94,7 @@ export function TrackerSettings({ onClose }: { onClose: () => void }) {
             </h3>
             <p className="mt-1 text-ink-2">
               While this app is open in a browser tab, you get a pop-up when a delivery&apos;s reminder time arrives. The bell
-              in the sidebar always lists what&apos;s due.
+              in the sidebar always lists what&apos;s due. For reminders when it&apos;s closed, add the calendar link below.
             </p>
             {permission === "granted" ? (
               <p className="mt-2 text-[#448361]">Desktop pop-ups are on.</p>
@@ -176,30 +163,6 @@ export function TrackerSettings({ onClose }: { onClose: () => void }) {
             )}
           </section>
 
-          <section>
-            <h3 className="flex items-center gap-2 font-medium">
-              <Mail size={16} /> Morning email
-            </h3>
-            <label className="mt-1 flex cursor-pointer items-start gap-3">
-              <input
-                type="checkbox"
-                checked={settings.emailReminders}
-                onChange={(e) => void setEmail(e.target.checked)}
-                className="mt-0.5 h-4 w-4 accent-[#2383e2]"
-              />
-              <span className="text-ink-2">
-                Each morning, email me at <b className="text-ink">{settings.email}</b> what&apos;s due today and tomorrow,
-                plus anything overdue.
-              </span>
-            </label>
-            {!settings.emailConfigured && (
-              <p className="mt-2 rounded-md bg-[#fbf3db] px-3 py-2 text-xs text-[#9a6b00]">
-                Email isn&apos;t set up on this server yet, so no emails go out. Whoever runs this app needs to add an email
-                key (see the README).
-              </p>
-            )}
-            <p className="mt-2 text-xs text-ink-3">Times use your time zone: {settings.timezone.replace(/_/g, " ")}.</p>
-          </section>
         </div>
       )}
     </Modal>

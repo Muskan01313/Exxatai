@@ -14,12 +14,8 @@ model User {
   passwordHash String
   createdAt    DateTime @default(now())
 
-  // Tracker reminder settings
-  timezone       String  @default("UTC")
-  emailReminders Boolean @default(true)
-  calendarToken  String? @unique
-  // Local date (YYYY-MM-DD) of the last morning email, so a retried cron doesn't send twice.
-  lastDigestOn   String?
+  // Secret for the private tracker calendar feed
+  calendarToken String? @unique
 
   memberships  WorkspaceMember[]
   createdPages Page[]            @relation("PageCreatedBy")

@@ -141,31 +141,6 @@ export function WorkspaceShell({
     return () => clearInterval(id);
   }, [reminders, router]);
 
-  // Times in the morning email follow the zone your browser is in.
-  useEffect(() => {
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    try {
-      if (sessionStorage.getItem("tracker-timezone") === timezone) {
-        return;
-      }
-    } catch {
-      // Fall through and sync anyway.
-    }
-    void fetch("/api/tracker/settings", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ timezone }),
-    }).then((res) => {
-      if (res.ok) {
-        try {
-          sessionStorage.setItem("tracker-timezone", timezone);
-        } catch {
-          // Not critical.
-        }
-      }
-    });
-  }, []);
-
   const ui = useMemo(
     () => ({
       openSearch: () => setSearchOpen(true),
