@@ -23,6 +23,7 @@
   --good:#6ccf9f; --good-soft:#173528; --bad:#ff9d89; --bad-soft:#3b2220;
   --note-bg:#1b2c3a; --code-bg:#203242; --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.35); color-scheme:dark}
 *,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
 html{scroll-behavior:auto}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16.5px;line-height:1.65}
 :focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:3px}
@@ -100,11 +101,12 @@ body.play .hero .wrap>*{animation:pop .5s ease both}
 .side a.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
 .side a.on span{color:var(--accent)}
 .topic{animation:pop .4s ease both;min-width:0}
-.thead{background:linear-gradient(135deg,var(--accent-soft),var(--bg) 70%);border-bottom:1px solid var(--line);padding:40px clamp(20px,4vw,56px) 30px}
+.thead{background:linear-gradient(135deg,var(--accent-soft),var(--bg) 70%);border-bottom:1px solid var(--line);padding-block:40px 30px;padding-inline:max(clamp(20px,4vw,56px),calc((100% - 1068px) / 2))}
+.tmain{min-width:0}
 .crumb{margin:0 0 6px;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-weight:600}
 .thead h2{font-size:clamp(1.8rem,3.6vw,2.6rem);font-weight:600;line-height:1.15;letter-spacing:-.015em;margin:0 0 8px;text-wrap:balance}
 .tblurb{margin:0;color:var(--muted);font-size:1.08rem;max-width:70ch}
-.tbody{padding:28px clamp(20px,4vw,56px) 64px;max-width:1180px}
+.tbody{padding:28px clamp(20px,4vw,56px) 64px;max-width:1180px;margin-inline:auto}
 .tbody>p,.tbody>ul,.tbody>ol:not(.proc),.tbody>.note{max-width:85ch}
 .tbody h3{font-size:1.2rem;font-weight:600;margin:34px 0 10px;padding-top:6px}
 .tbody h3:first-child{margin-top:0}
@@ -193,7 +195,7 @@ dl.gloss dd{margin:2px 0 0;padding-bottom:14px;border-bottom:1px solid var(--lin
 <div id="view" hidden>
   <div class="bar"><div class="in"><span class="brand">E<b>xx</b>at</span><a class="back" href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All topics</a>
     <nav class="steps" aria-label="Previous and next topic"><a class="pn prev" id="prev" href="#"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><small>Previous</small><span id="prevT"></span></a><a class="pn next" id="next" href="#"><small>Next</small><span id="nextT"></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></a></nav></div></div>
-  <div class="tlayout"><aside class="side" aria-label="All topics"><p>Getting started</p><a href="#overview" data-id="overview"><span>Start</span>Overview</a><a href="#create-form" data-id="create-form"><span>Steps 1–7, 9–11</span>Create a new form</a><a class="sub" href="#step1" data-part="step1">Landing page</a><a class="sub" href="#step2" data-part="step2">Create a new form</a><a class="sub" href="#abbr" data-part="abbr">Feature ID naming rules</a><a class="sub" href="#step3" data-part="step3">Start with an existing form</a><a class="sub" href="#version" data-part="version">Version naming for duplicated forms</a><a class="sub" href="#step4" data-part="step4">Choose a form from the Forms List</a><a class="sub" href="#step5" data-part="step5">Replicated form in the editor</a><a class="sub" href="#step6" data-part="step6">Editor for a newly created form</a><a class="sub" href="#step7" data-part="step7">Sections (Layout Summary)</a><a class="sub" href="#step9" data-part="step9">Layout tab</a><a class="sub" href="#step10" data-part="step10">Workflow tab</a><a class="sub" href="#step11" data-part="step11">Completed Form tab for the example form</a><p>Instance-based forms</p><a href="#instance-forms" data-id="instance-forms"><span>Steps 8 and 13</span>Instance-based forms</a><a class="sub" href="#step8" data-part="step8">Instance-based forms</a><a class="sub" href="#step13" data-part="step13">How the form appears for multiple actors</a><a href="#step12" data-id="step12"><span>Step 12</span>Start to finish</a><p>Multi response forms</p><a href="#step14" data-id="step14"><span>Step 14</span>Multi response forms</a><p>Reference</p><a href="#glossary" data-id="glossary"><span>Reference</span>Glossary</a></aside><main><section id="overview" class="topic" hidden data-title="Overview"><header class="thead"><p class="crumb">Getting started · Start</p><h2>Overview</h2><p class="tblurb">What the guide covers and the process from start to finish.</p></header><div class="tbody">
+  <main class="tmain"><section id="overview" class="topic" hidden data-title="Overview"><header class="thead"><p class="crumb">Getting started · Start</p><h2>Overview</h2><p class="tblurb">What the guide covers and the process from start to finish.</p></header><div class="tbody">
   
   <p>This guide describes how forms are created in the Exxat form builder. Two methods are covered: creating a new form, and duplicating a form that already exists in a university (tenant). The guide also introduces the editor that opens once a form has been created or replicated, including the default values of a new form. It then covers the Sections tab, where sections and fields are added, instance-based forms, the Layout tab, and the Workflow tab.</p>
   <p>The top menu of the builder contains four areas: <strong>Forms</strong>, <strong>Multi Layout</strong>, <strong>Stakeholders</strong> and <strong>Templates</strong>. Form creation starts in the <strong>Forms</strong> area.</p>
@@ -1247,7 +1249,7 @@ dl.gloss dd{margin:2px 0 0;padding-bottom:14px;border-bottom:1px solid var(--lin
     <dt>Editor tabs</dt>
     <dd>The tabs across the top of the editor: Form, Sections, Layout, Workflow, Notification and Terms.</dd>
   </dl>
-</div></section></main></div>
+</div></section></main>
 </div>
 
 <script>
