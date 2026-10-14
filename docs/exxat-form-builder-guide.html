@@ -1,4 +1,4 @@
-<title>Exxat Form Builder Guide</title>
+<title>Exxat Form Configuration Guide</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -312,14 +312,14 @@ dl.gloss dd{margin:2px 0 0;padding-bottom:14px;border-bottom:1px solid var(--lin
 </style>
 
 <div id="intro" role="presentation" hidden>
-  <div class="mark"><div class="word" aria-label="Exxat"><span style="--i:0">E</span><span class="x" style="--i:1">x</span><span class="x" style="--i:2">x</span><span style="--i:3">a</span><span style="--i:4">t</span></div><div class="sweep"></div><div class="tag">Form Builder Guide</div></div>
+  <div class="mark"><div class="word" aria-label="Exxat"><span style="--i:0">E</span><span class="x" style="--i:1">x</span><span class="x" style="--i:2">x</span><span style="--i:3">a</span><span style="--i:4">t</span></div><div class="sweep"></div><div class="tag">Form Configuration Guide</div></div>
 </div>
 
 <div id="home">
   <header class="hero"><span class="orb o1" aria-hidden="true"></span><span class="orb o2" aria-hidden="true"></span><div class="wrap hgrid">
     <div class="hcopy">
       <p class="brand">E<b>xx</b>at</p>
-      <h1>Form Builder <em>Guide</em></h1>
+      <h1>Form Configuration <em>Guide</em></h1>
       <p class="lede">Pick a topic to learn. Each box opens step-by-step instructions with screenshots from the Exxat Form Builder.</p>
       <a class="toolbtn" href="https://lam-evaluation-config-ui.mfe.exxat.com" target="_blank" rel="noopener">Open the Form Builder<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></svg></a><span class="toolurl">lam-evaluation-config-ui.mfe.exxat.com</span>
       <dl class="stats"><div><dt>Topics</dt><dd>6</dd></div><div><dt>Screenshots</dt><dd>83</dd></div><div><dt>Interactive tools</dt><dd>1</dd></div></dl>
@@ -1670,11 +1670,11 @@ dl.gloss dd{margin:2px 0 0;padding-bottom:14px;border-bottom:1px solid var(--lin
       [].forEach.call(document.querySelectorAll('.side a[data-id]'),function(a){var on=a.dataset.id===sec.id;a.classList.toggle('on',on);if(on&&a.scrollIntoView)a.scrollIntoView({block:'nearest'})});
       home.hidden=true; view.hidden=false; onHome=false;
       if(t===sec) window.scrollTo(0,0); else t.scrollIntoView();
-      document.title=sec.dataset.title+' · '+'Exxat Form Builder Guide';
+      document.title=sec.dataset.title+' · '+'Exxat Form Configuration Guide';
     } else {
       view.hidden=true; home.hidden=false;
       if(!onHome) window.scrollTo(0,homeY);
-      onHome=true; document.title='Exxat Form Builder Guide';
+      onHome=true; document.title='Exxat Form Configuration Guide';
     }
   }
   var subs=[].slice.call(document.querySelectorAll('.side a.sub'));
