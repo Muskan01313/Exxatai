@@ -198,7 +198,32 @@ body.play .path li:nth-child(2){animation-delay:.08s}body.play .path li:nth-chil
 @keyframes bob{0%,100%{transform:rotate(-2deg) translateY(0)}50%{transform:rotate(-1.2deg) translateY(-10px)}}
 @media (max-width:1000px){.path{grid-template-columns:repeat(2,minmax(0,1fr))}.path li:nth-child(2n)::after{display:none}}
 @media (max-width:640px){.path{grid-template-columns:1fr}.path li::after{display:none}}
-@media (max-width:1000px){.hgrid{grid-template-columns:1fr}.mock{display:none}.bento{grid-template-columns:repeat(2,minmax(0,1fr))}#c-create-form{grid-row:auto}#c-step14{grid-column:auto}}
+
+/* Walking helper beside the form drawing */
+.stage{position:relative;justify-self:end;width:100%;max-width:440px}
+.stage .mock{justify-self:auto}
+.buddy{position:absolute;left:-175px;bottom:-72px;width:144px;height:240px;overflow:visible;z-index:2;animation:walkin 3s cubic-bezier(.3,.1,.4,1) 2.8s both}
+.buddy *{transform-box:view-box}
+.bbody{animation:step .5s ease-in-out 2.8s 6}
+.legL{transform-origin:51px 122px;animation:legA .5s ease-in-out 2.8s 6}
+.legR{transform-origin:68px 122px;animation:legB .5s ease-in-out 2.8s 6}
+.armL{transform-origin:36px 78px;animation:legB .5s ease-in-out 2.8s 6}
+.armR{transform-origin:84px 78px;animation:legA .5s ease-in-out 2.8s 6,salute 3.2s ease-in-out 6.1s 1}
+.fore{transform-origin:84px 100px;animation:salutef 3.2s ease-in-out 6.1s 1}
+.head{transform-origin:60px 58px;animation:nod 3.2s ease-in-out 6.1s 1}
+.eye{transform-origin:center;transform-box:fill-box;animation:blink 4.5s 7s infinite}
+.bshadow{transform-origin:60px 193px;transform-box:view-box;animation:shadow .5s ease-in-out 2.8s 6}
+@keyframes walkin{from{transform:translateX(-380px)}to{transform:translateX(0)}}
+@keyframes step{0%,100%{transform:translateY(0)}25%,75%{transform:translateY(-4px)}50%{transform:translateY(0)}}
+@keyframes legA{0%,100%{transform:rotate(0)}25%{transform:rotate(24deg)}75%{transform:rotate(-24deg)}}
+@keyframes legB{0%,100%{transform:rotate(0)}25%{transform:rotate(-24deg)}75%{transform:rotate(24deg)}}
+@keyframes shadow{0%,50%,100%{transform:scaleX(1)}25%,75%{transform:scaleX(.88)}}
+@keyframes salute{0%{transform:rotate(0)}22%,72%{transform:rotate(-165deg)}80%{transform:rotate(-130deg)}100%{transform:rotate(0)}}
+@keyframes salutef{0%{transform:rotate(0)}22%,72%{transform:rotate(-62deg)}80%{transform:rotate(-30deg)}100%{transform:rotate(0)}}
+@keyframes nod{0%,20%{transform:rotate(0)}30%,66%{transform:rotate(5deg)}80%,100%{transform:rotate(0)}}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
+@media (max-width:1180px){.buddy{left:-135px;width:114px;height:190px;bottom:-60px}}
+@media (max-width:1000px){.hgrid{grid-template-columns:1fr}.mock,.stage{display:none}.bento{grid-template-columns:repeat(2,minmax(0,1fr))}#c-create-form{grid-row:auto}#c-step14{grid-column:auto}}
 @media (max-width:640px){.bento{grid-template-columns:1fr}#c-create-form,#c-step14{grid-column:auto}.plist{grid-template-columns:1fr}.stats{gap:24px}.stats dd{font-size:1.6rem}}
 
 /* Topic view: full-width top bar with prev/next, sidebar of all topics, wide content */
@@ -312,6 +337,7 @@ dl.gloss dd{margin:2px 0 0;padding-bottom:14px;border-bottom:1px solid var(--lin
       <p class="lede">Pick a topic to learn. Each box opens step-by-step instructions with screenshots from the Exxat Form Builder.</p>
       <dl class="stats"><div><dt>Topics</dt><dd>6</dd></div><div><dt>Screenshots</dt><dd>65</dd></div><div><dt>Interactive tools</dt><dd>1</dd></div></dl>
     </div>
+    <div class="stage">
     <div class="mock" aria-hidden="true">
       <div class="mtabs"><span class="on">Form</span><span>Sections</span><span>Layout</span><span>Workflow</span></div>
       <div class="mbody">
@@ -322,6 +348,36 @@ dl.gloss dd{margin:2px 0 0;padding-bottom:14px;border-bottom:1px solid var(--lin
         <div class="mf req"><small>Date of Initiation *</small><b class="mph">MM/DD/YYYY</b></div>
         <div class="mbtn"><span>Save</span></div>
       </div>
+    </div>
+    <svg class="buddy" viewBox="0 0 120 200" aria-hidden="true">
+        <ellipse class="bshadow" cx="60" cy="193" rx="30" ry="5" fill="rgba(0,0,0,.35)"/>
+        <g class="bbody">
+          <g class="leg legL"><rect x="45" y="120" width="13" height="56" rx="6" fill="#2a3a7a"/><path d="M40 178h20v8a3 3 0 0 1-3 3H43a5 5 0 0 1-5-5z" fill="#14181f"/></g>
+          <g class="leg legR"><rect x="62" y="120" width="13" height="56" rx="6" fill="#33468f"/><path d="M60 178h20v6a5 5 0 0 1-5 5H63a3 3 0 0 1-3-3z" fill="#14181f"/></g>
+          <g class="armL"><rect x="30" y="74" width="12" height="50" rx="6" fill="#c41f68"/><circle cx="36" cy="126" r="6" fill="#f1c6a0"/></g>
+          <rect x="38" y="68" width="44" height="60" rx="14" fill="#e0347f"/>
+          <path d="M52 68l8 10 8-10" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect x="54" y="96" width="12" height="9" rx="2" fill="#ffffff" opacity=".9"/>
+          <rect x="53" y="58" width="14" height="12" rx="4" fill="#f1c6a0"/>
+          <g class="head">
+            <circle cx="60" cy="40" r="22" fill="#f1c6a0"/>
+            <path d="M38 38c0-15 10-24 23-24s22 9 22 22c-6-6-16-9-27-8-7 1-13 4-18 10z" fill="#2b2140"/>
+            <ellipse class="eye" cx="52" cy="42" rx="2.4" ry="3" fill="#1a1a2a"/>
+            <ellipse class="eye" cx="68" cy="42" rx="2.4" ry="3" fill="#1a1a2a"/>
+            <path d="M53 51c4 4 10 4 14 0" fill="none" stroke="#8a3b2a" stroke-width="2.4" stroke-linecap="round"/>
+            <circle cx="47" cy="49" r="3" fill="#f28fae" opacity=".55"/><circle cx="73" cy="49" r="3" fill="#f28fae" opacity=".55"/>
+          </g>
+          <g class="armR">
+            <rect x="78" y="74" width="12" height="28" rx="6" fill="#c41f68"/>
+            <g class="fore">
+              <rect x="78" y="96" width="12" height="28" rx="6" fill="#d02a73"/>
+              <circle cx="84" cy="126" r="6" fill="#f1c6a0" stroke="#b9805c" stroke-width="1"/>
+              <rect x="79.6" y="128" width="4" height="12" rx="2" fill="#f1c6a0" stroke="#b9805c" stroke-width="1"/>
+              <rect x="84.4" y="128" width="4" height="13" rx="2" fill="#f1c6a0" stroke="#b9805c" stroke-width="1"/>
+            </g>
+          </g>
+        </g>
+      </svg>
     </div>
   </div></header>
   <main class="wrap homemain"><div class="hhead"><h2>Choose a topic</h2><p>New to the Form Builder? Follow the topics in this order.</p></div><ol class="path" aria-label="Suggested learning order"><li class="t-overview"><a href="#overview"><b>1</b>Overview</a></li><li class="t-create-form"><a href="#create-form"><b>2</b>Create a new form</a></li><li class="t-controls"><a href="#controls"><b>3</b>Control types</a></li><li class="t-instance-forms"><a href="#instance-forms"><b>4</b>Instance-based forms</a></li><li class="t-step14"><a href="#step14"><b>5</b>Multi response forms</a></li></ol><div class="bento"><div class="card t-overview" id="c-overview" data-id="overview"><span class="ctop"><span class="ico" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg></span><span class="lab">Getting started · Start</span></span><span class="ct"><a class="cl" href="#overview">Overview</a></span><span class="cb">What the guide covers and the process from start to finish.</span><span class="cx">&nbsp;<span class="go" aria-hidden="true">→</span></span><svg class="wm" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg></div><div class="card big t-create-form" id="c-create-form" data-id="create-form"><span class="ctop"><span class="ico" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M12 12v6M9 15h6"/></svg></span><span class="lab">Getting started · Steps 1–7, 9–11</span></span><span class="ct"><a class="cl" href="#create-form">Create a new form</a></span><span class="cb">Start from the landing page, create a form from scratch or from an existing one, then set up its sections, layout and workflow.</span><ol class="plist"><li><a href="#step1">Landing page</a></li><li><a href="#step2">Create a new form</a></li><li><a href="#abbr">Feature ID naming rules</a></li><li><a href="#step3">Start with an existing form</a></li><li><a href="#version">Version naming for duplicated forms</a></li><li><a href="#step4">Choose a form from the Forms List</a></li><li><a href="#step5">Replicated form in the editor</a></li><li><a href="#step6">Editor for a newly created form</a></li><li><a href="#step7">Sections (Layout Summary)</a></li><li><a href="#step9">Layout tab</a></li><li><a href="#step10">Workflow tab</a></li><li><a href="#step11">Completed Form tab for the example form</a></li></ol><span class="cx">12 parts · 46 screenshots · Interactive tool<span class="go" aria-hidden="true">→</span></span><svg class="wm" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M12 12v6M9 15h6"/></svg></div><div class="card t-controls" id="c-controls" data-id="controls"><span class="ctop"><span class="ico" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg></span><span class="lab">Building the form · Field types</span></span><span class="ct"><a class="cl" href="#controls">Control types</a></span><span class="cb">Every kind of field you can add to a question, from textbox to formula.</span><span class="cx">9 screenshots<span class="go" aria-hidden="true">→</span></span><svg class="wm" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg></div><div class="card big t-instance-forms" id="c-instance-forms" data-id="instance-forms"><span class="ctop"><span class="ico" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.2c2.8.3 5 2.7 5 5.8"/></svg></span><span class="lab">Instance-based forms · Steps 8, 12 and 13</span></span><span class="ct"><a class="cl" href="#instance-forms">Instance-based forms</a></span><span class="cb">Turn on instanceForm, add one instance per actor, follow the full setup from start to finish, and see how the form appears for each actor.</span><ol class="plist"><li><a href="#step8">Instance-based forms</a></li><li><a href="#step12">Configuring an instance-based form, start to finish</a></li><li><a href="#step13">How the form appears for multiple actors</a></li></ol><span class="cx">3 parts · 5 screenshots<span class="go" aria-hidden="true">→</span></span><svg class="wm" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.2c2.8.3 5 2.7 5 5.8"/></svg></div><div class="card t-step14" id="c-step14" data-id="step14"><span class="ctop"><span class="ico" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="13" height="13" rx="2"/><path d="M4 16V5a1 1 0 0 1 1-1h11"/><path d="M11 13.5h5M13.5 11v5"/></svg></span><span class="lab">Multi response forms · Step 14</span></span><span class="ct"><a class="cl" href="#step14">Multi response forms</a></span><span class="cb">MultipleResponse, isMultiResponse and the first date field.</span><span class="cx">5 screenshots<span class="go" aria-hidden="true">→</span></span><svg class="wm" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="13" height="13" rx="2"/><path d="M4 16V5a1 1 0 0 1 1-1h11"/><path d="M11 13.5h5M13.5 11v5"/></svg></div><div class="card t-glossary" id="c-glossary" data-id="glossary"><span class="ctop"><span class="ico" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V5a2 2 0 0 1 2-2h14v15H6.5A2.5 2.5 0 0 0 4 20.5 2.5 2.5 0 0 0 6.5 23H20"/><path d="M9 8h7M9 11.5h5"/></svg></span><span class="lab">Reference</span></span><span class="ct"><a class="cl" href="#glossary">Glossary</a></span><span class="cb">Every term used in the Form Builder, in one list.</span><span class="cx">&nbsp;<span class="go" aria-hidden="true">→</span></span><svg class="wm" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V5a2 2 0 0 1 2-2h14v15H6.5A2.5 2.5 0 0 0 4 20.5 2.5 2.5 0 0 0 6.5 23H20"/><path d="M9 8h7M9 11.5h5"/></svg></div></div></main>
