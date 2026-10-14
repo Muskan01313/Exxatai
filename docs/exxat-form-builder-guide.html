@@ -585,6 +585,7 @@ a.nttile:hover{border-color:var(--tc)}
       <div class="ctas">
         <a class="btn-primary" href="#overview">Start learning<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
         <a class="btn-ghost" href="https://lam-evaluation-config-ui.mfe.exxat.com" target="_blank" rel="noopener">Open the Form Builder<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></svg></a>
+        <a class="btn-ghost" data-site href="Exxat-Form-Configuration-Guide.html" download="Exxat-Form-Configuration-Guide.html" title="Saves the whole guide as one HTML file. Open it in any browser, no login or internet needed."><span>Download the website</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg></a>
       </div>
       <span class="toolurl">lam-evaluation-config-ui.mfe.exxat.com</span>
     </div>
@@ -2141,6 +2142,9 @@ a.nttile:hover{border-color:var(--tc)}
   function toBlob(href){var c=href.indexOf(','),meta=href.slice(5,c),raw=atob(href.slice(c+1)),u=new Uint8Array(raw.length);for(var k=0;k<raw.length;k++)u[k]=raw.charCodeAt(k);return new Blob([u],{type:meta.split(';')[0]})}
   document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[data-dl]');if(!a||!dlns)return;e.preventDefault();
     var lbl=a.querySelector('.st2');dlns.save({filename:a.getAttribute('download'),data:toBlob(a.getAttribute('href'))}).then(function(){a.classList.add('ok')}).catch(function(err){if(err&&err.code!=='declined')a.title='This download is not available here.'})});
+  document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[data-site]');if(!a||!dlns)return;e.preventDefault();
+    var t=a.querySelector('span');t.textContent='Preparing…';
+    fetch(a.getAttribute('href')).then(function(r){if(!r.ok)throw 0;return r.blob()}).then(function(b){return dlns.save({filename:a.getAttribute('download'),data:b})}).then(function(){t.textContent='Downloaded'},function(err){t.textContent='Download the website';if(!err||err.code!=='declined')location.href=a.getAttribute('href')})});
   document.addEventListener('click',function(e){
     var ex=e.target.closest&&e.target.closest('[data-expand]');if(ex){document.getElementById(ex.dataset.expand).classList.add('open');return}
     var cb=e.target.closest&&e.target.closest('[data-copy]');if(!cb)return;
