@@ -414,6 +414,53 @@ dl.gloss .gl dd{margin:0!important;padding:0!important;border:0!important;font-s
 .card{border-radius:16px}
 .hhead h2{font-size:1.7rem;font-weight:700;letter-spacing:-.02em}
 .path a{border-radius:14px;padding:14px 16px}
+
+/* ===== First impression ===== */
+.hero{padding-block:56px 110px}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;margin:0 0 20px;padding:7px 14px 7px 12px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);font-size:.82rem;font-weight:500;color:#e9eef4;backdrop-filter:blur(6px)}
+.pulse{position:relative;width:8px;height:8px;border-radius:50%;background:#ff6fae}
+.pulse::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:2px solid #ff6fae;opacity:0;animation:ring 2.4s ease-out infinite}
+@keyframes ring{0%{transform:scale(.6);opacity:.8}100%{transform:scale(1.8);opacity:0}}
+.hero h1{font-size:clamp(2.6rem,5.4vw,4.6rem);line-height:1.02;letter-spacing:-.035em;margin-bottom:20px}
+.hero h1 em{background:linear-gradient(100deg,#ff6fae 0%,#ffd1e6 35%,#ff6fae 55%,#e0347f 100%);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 6s ease-in-out infinite}
+@keyframes shine{0%,100%{background-position:0% 0}50%{background-position:100% 0}}
+.lede{font-size:1.14rem;line-height:1.6;max-width:54ch;color:#c4cfda}
+.ctas{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+.btn-primary,.btn-ghost{display:inline-flex;align-items:center;gap:10px;padding:14px 22px;border-radius:12px;font-weight:600;text-decoration:none;transition:transform .2s,box-shadow .2s,background .2s,border-color .2s}
+.btn-primary{background:linear-gradient(135deg,#ff4f98,#e0347f 55%,#c41f68);color:#fff;box-shadow:0 14px 30px -12px rgba(224,52,127,.9),inset 0 1px 0 rgba(255,255,255,.25)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 18px 36px -12px rgba(224,52,127,1)}
+.btn-primary svg{transition:transform .2s}.btn-primary:hover svg{transform:translateX(3px)}
+.btn-ghost{color:#fff;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.22)}
+.btn-ghost:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.4);transform:translateY(-2px)}
+.toolurl{margin-top:12px}
+.toolbtn{display:none}
+.wave{position:absolute;left:0;right:0;bottom:-1px;width:100%;height:70px;z-index:1}
+.wave path{fill:var(--bg)}
+/* layered illustration */
+.stage{position:relative;max-width:470px;min-height:430px;perspective:1400px}
+.stage .mock{position:absolute;width:100%;max-width:440px}
+.mock.front{right:0;top:44px;animation:bob 6s ease-in-out 1.2s infinite;transform:rotate(-2deg);z-index:2}
+.mock.back{right:-48px;top:-40px;transform:rotate(7deg) scale(.9);opacity:.8;z-index:1;animation:bob2 7s ease-in-out .6s infinite;box-shadow:0 30px 60px rgba(0,0,0,.45)}
+@keyframes bob2{0%,100%{transform:rotate(7deg) scale(.9) translateY(0)}50%{transform:rotate(7.6deg) scale(.9) translateY(8px)}}
+.msec{display:flex;align-items:center;justify-content:space-between;border:1px solid #d3dae3;border-radius:6px;padding:8px 10px;font-size:.78rem}
+.msec b{font-weight:600}
+.mtag{font-family:var(--mono);font-size:.68rem;color:#a3165a;background:#f5e7ef;padding:2px 7px;border-radius:5px}
+.chip{position:absolute;z-index:3;display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:999px;background:rgba(255,255,255,.96);color:#1a2733;font-size:.8rem;font-weight:600;box-shadow:0 14px 30px -10px rgba(0,0,0,.55);white-space:nowrap}
+.chip svg{color:#1d6b45}
+.chip i{font-style:normal;color:#e0347f;font-weight:700}
+.chip .dotc{width:8px;height:8px;border-radius:50%;background:#1f66c9}
+.c1{left:-26px;bottom:-26px;animation:float1 5s ease-in-out infinite}
+.c2{right:-22px;top:6px;animation:float1 6s ease-in-out 1s infinite}
+.c3{left:-18px;top:-6px;animation:float1 5.5s ease-in-out .5s infinite}
+@keyframes float1{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+body.play .stage{animation:pop .8s cubic-bezier(.2,.7,.2,1) .1s both}
+body.play .mock{animation:none}
+/* topics heading */
+.homemain{padding-top:26px}
+.hhead{align-items:flex-end;margin-bottom:24px}
+.hhead h2::before{content:"Topics";display:block;font-size:.76rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+@media (max-width:1180px){.c1{left:-10px}.mock.back{right:-14px}}
+@media (max-width:640px){.hero{padding-block:44px 90px}.btn-primary,.btn-ghost{flex:1;justify-content:center}}
 </style>
 </head>
 <body>
@@ -427,12 +474,26 @@ dl.gloss .gl dd{margin:0!important;padding:0!important;border:0!important;font-s
   <header class="hero"><span class="orb o1" aria-hidden="true"></span><span class="orb o2" aria-hidden="true"></span><div class="wrap hgrid">
     <div class="hcopy">
       <p class="brand">E<b>xx</b>at</p>
+      <p class="eyebrow"><span class="pulse" aria-hidden="true"></span>Eval Configuration Tool · Training guide</p>
       <h1>Form Configuration <em>Guide</em></h1>
-      <p class="lede">Pick a topic to learn. Each box opens step-by-step instructions with screenshots from the Exxat Form Builder.</p>
-      <a class="toolbtn" href="https://lam-evaluation-config-ui.mfe.exxat.com" target="_blank" rel="noopener">Open the Form Builder<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></svg></a><span class="toolurl">lam-evaluation-config-ui.mfe.exxat.com</span>
+      <p class="lede">Everything you need to build evaluation forms in the Exxat Form Builder, from the first field to a published multi response form. Pick a topic and follow it step by step.</p>
+      <div class="ctas">
+        <a class="btn-primary" href="#overview">Start learning<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <a class="btn-ghost" href="https://lam-evaluation-config-ui.mfe.exxat.com" target="_blank" rel="noopener">Open the Form Builder<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></svg></a>
+      </div>
+      <span class="toolurl">lam-evaluation-config-ui.mfe.exxat.com</span>
     </div>
-    <div class="stage">
-    <div class="mock" aria-hidden="true">
+    <div class="stage" aria-hidden="true">
+      <div class="mock back">
+        <div class="mtabs"><span>Form</span><span class="on">Sections</span><span>Layout</span><span>Workflow</span></div>
+        <div class="mbody">
+          <div class="msec"><b>INTRODUCTION</b><span class="mtag">label</span></div>
+          <div class="msec"><b>Ratings</b><span class="mtag">radio</span></div>
+          <div class="msec"><b>Comments</b><span class="mtag">textarea</span></div>
+          <div class="msec"><b>Signature</b><span class="mtag">esign</span></div>
+        </div>
+      </div>
+    <div class="mock front">
       <div class="mtabs"><span class="on">Form</span><span>Sections</span><span>Layout</span><span>Workflow</span></div>
       <div class="mbody">
         <div class="mf"><small>Form Name</small><b>Student Volunteer Record</b></div>
@@ -443,8 +504,11 @@ dl.gloss .gl dd{margin:0!important;padding:0!important;border:0!important;font-s
         <div class="mbtn"><span>Save</span></div>
       </div>
     </div>
+      <span class="chip c1"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>isMultiResponse</span>
+      <span class="chip c2"><i>*</i>required</span>
+      <span class="chip c3"><i class="dotc"></i>datepicker</span>
     </div>
-  </div></header>
+  </div><svg class="wave" viewBox="0 0 1440 70" preserveAspectRatio="none" aria-hidden="true"><path d="M0 70V38C240 6 480 0 720 22s480 44 720 10v38z"/></svg></header>
   <main class="wrap homemain"><div class="hhead"><h2>Choose a topic</h2><p>New to the Form Builder? Follow the topics in this order.</p></div><ol class="path" aria-label="Suggested learning order"><li class="t-overview"><a href="#overview"><b>1</b>Overview</a></li><li class="t-create-form"><a href="#create-form"><b>2</b>Create a new form</a></li><li class="t-controls"><a href="#controls"><b>3</b>Control types</a></li><li class="t-instance-forms"><a href="#instance-forms"><b>4</b>Instance-based forms</a></li><li class="t-step14"><a href="#step14"><b>5</b>Multi response forms</a></li></ol><div class="bento"><div class="card t-overview" id="c-overview" data-id="overview"><span class="ctop"><span class="ico" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg></span><span class="lab">Getting started</span></span><span class="ct"><a class="cl" href="#overview">Overview</a></span><span class="cb">What the guide covers and the process from start to finish.</span><span class="cx">&nbsp;<span class="go" aria-hidden="true">→</span></span><svg class="wm" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg></div><div class="card big t-create-form" id="c-create-form" data-id="create-form"><span class="ctop"><span class="ico" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M12 12v6M9 15h6"/></svg></span><span class="lab">Getting started</span></span><span class="ct"><a class="cl" href="#create-form">Create a new form</a></span><span class="cb">Start from the landing page, create a form from scratch or from an existing one, then set up its sections, layout and workflow.</span><ol class="plist"><li><a href="#step1">Landing page</a></li><li><a href="#step2">Create a new form</a></li><li><a href="#abbr">Feature ID naming rules</a></li><li><a href="#step3">Start with an existing form</a></li><li><a href="#version">Version naming for duplicated forms</a></li><li><a href="#step4">Choose a form from the Forms List</a></li><li><a href="#step5">Replicated form in the editor</a></li><li><a href="#step6">Editor for a newly created form</a></li><li><a href="#step7">Sections (Layout Summary)</a></li><li><a href="#step9">Layout tab</a></li><li><a href="#step10">Workflow tab</a></li><li><a href="#step11">Completed Form tab for the example form</a></li></ol><span class="cx">12 parts · 50 screenshots · Interactive tool<span class="go" aria-hidden="true">→</span></span><svg class="wm" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M12 12v6M9 15h6"/></svg></div><div class="card t-controls" id="c-controls" data-id="controls"><span class="ctop"><span class="ico" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg></span><span class="lab">Building the form</span></span><span class="ct"><a class="cl" href="#controls">Control types</a></span><span class="cb">Every kind of field you can add to a question, from textbox to formula.</span><span class="cx">20 screenshots<span class="go" aria-hidden="true">→</span></span><svg class="wm" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg></div><div class="card big t-instance-forms" id="c-instance-forms" data-id="instance-forms"><span class="ctop"><span class="ico" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.2c2.8.3 5 2.7 5 5.8"/></svg></span><span class="lab">Instance-based forms</span></span><span class="ct"><a class="cl" href="#instance-forms">Instance-based forms</a></span><span class="cb">Turn on instanceForm, add one instance per actor, follow the full setup from start to finish, and see how the form appears for each actor.</span><ol class="plist"><li><a href="#step8">Instance-based forms</a></li><li><a href="#step12">Configuring an instance-based form, start to finish</a></li><li><a href="#step13">How the form appears for multiple actors</a></li></ol><span class="cx">3 parts · 5 screenshots<span class="go" aria-hidden="true">→</span></span><svg class="wm" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.2c2.8.3 5 2.7 5 5.8"/></svg></div><div class="card t-step14" id="c-step14" data-id="step14"><span class="ctop"><span class="ico" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="13" height="13" rx="2"/><path d="M4 16V5a1 1 0 0 1 1-1h11"/><path d="M11 13.5h5M13.5 11v5"/></svg></span><span class="lab">Multi response forms</span></span><span class="ct"><a class="cl" href="#step14">Multi response forms</a></span><span class="cb">MultipleResponse, isMultiResponse and the first date field.</span><span class="cx">8 screenshots<span class="go" aria-hidden="true">→</span></span><svg class="wm" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="13" height="13" rx="2"/><path d="M4 16V5a1 1 0 0 1 1-1h11"/><path d="M11 13.5h5M13.5 11v5"/></svg></div><div class="card t-glossary" id="c-glossary" data-id="glossary"><span class="ctop"><span class="ico" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V5a2 2 0 0 1 2-2h14v15H6.5A2.5 2.5 0 0 0 4 20.5 2.5 2.5 0 0 0 6.5 23H20"/><path d="M9 8h7M9 11.5h5"/></svg></span><span class="lab">Reference</span></span><span class="ct"><a class="cl" href="#glossary">Glossary</a></span><span class="cb">Every term used in the Form Builder, in one list.</span><span class="cx">&nbsp;<span class="go" aria-hidden="true">→</span></span><svg class="wm" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V5a2 2 0 0 1 2-2h14v15H6.5A2.5 2.5 0 0 0 4 20.5 2.5 2.5 0 0 0 6.5 23H20"/><path d="M9 8h7M9 11.5h5"/></svg></div></div></main>
 </div>
 
