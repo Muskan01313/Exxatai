@@ -470,6 +470,15 @@ body.play .mock{animation:none}
 .pathbox .path b{width:34px;height:34px;flex:0 0 auto;background:var(--ts);color:var(--tc);font-size:.9rem;box-shadow:0 0 0 3px var(--surface)}
 @media (max-width:1000px){.hbody{grid-template-columns:1fr}.pathbox{position:static}.pathbox .path{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.pathbox .path li::after{display:none!important}}
 @media (max-width:640px){.pathbox .path{grid-template-columns:1fr}}
+
+/* Full-width home */
+#home .wrap{max-width:none;padding-inline:clamp(20px,4vw,72px)}
+.hgrid{grid-template-columns:minmax(0,1fr) minmax(0,560px);gap:clamp(32px,5vw,96px)}
+.stage{max-width:520px;justify-self:end;width:100%}
+.stage .mock{max-width:480px}
+.hbody{grid-template-columns:clamp(240px,16vw,290px) minmax(0,1fr)}
+@media (min-width:1700px){.bento{grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}.hero h1{font-size:5rem}}
+@media (max-width:1000px){.hgrid{grid-template-columns:1fr}}
 </style>
 
 <div id="intro" role="presentation" hidden>
