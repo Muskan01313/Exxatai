@@ -24,6 +24,7 @@ model User {
   invites      WorkspaceInvite[]
   tasks        Task[]
   timeEntries  TimeEntry[]
+  workLogs     WorkLogEntry[]
 }
 
 enum TaskStatus {
@@ -98,6 +99,8 @@ model Workspace {
   invites     WorkspaceInvite[]
   tasks       Task[]
   timeEntries TimeEntry[]
+  workLogs    WorkLogEntry[]
+  workLogList WorkLogOptions?
 }
 
 model WorkspaceInvite {
@@ -193,4 +196,48 @@ model PageChunk {
   page Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
 
   @@unique([pageId, chunkIndex])
+}
+
+// One row of the team work log (ticket tracker). Saved as it's typed, so a reload loses nothing.
+model WorkLogEntry {
+  id             String    @id @default(uuid())
+  userId         String
+  workspaceId    String
+  ticketNumber   String    @default("")
+  stubName       String    @default("")
+  domain         String    @default("")
+  analyst        String    @default("")
+  workType       String    @default("")
+  mainCategory   String    @default("")
+  subCategory    String    @default("")
+  formComplexity String    @default("")
+  completedCount Int?
+  // Calendar days as YYYY-MM-DD.
+  usedByDate     String?
+  workDate       String
+  comments       String    @default("")
+  vstsNumber     String    @default("")
+  status         String    @default("")
+  // Finished timer time; a running timer adds (now - timerStartedAt) on top.
+  timerSeconds   Int       @default(0)
+  timerStartedAt DateTime?
+  // Null while the row is still a draft.
+  submittedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, userId, submittedAt])
+  @@index([workspaceId, workDate])
+}
+
+// The dropdown choices for the work log, shared by everyone in the workspace.
+model WorkLogOptions {
+  workspaceId String   @id
+  lists       Json     @default("{}")
+  updatedAt   DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 }

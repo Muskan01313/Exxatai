@@ -7,6 +7,7 @@ import Link from "next/link";
 import {
   Bell,
   CircleCheckBig,
+  ClipboardList,
   ChevronDown,
   ChevronsLeft,
   FileText,
@@ -129,6 +130,7 @@ export function Sidebar({ onCollapse }: { onCollapse: () => void }) {
   const pathname = usePathname();
   const currentPageId = pathname?.match(/\/p\/([^/]+)/)?.[1];
   const onTracker = pathname?.endsWith("/tracker") ?? false;
+  const onWorkLog = pathname?.endsWith("/worklog") ?? false;
   const urgent = urgentCount(ws.reminders);
   const [expanded, setExpanded] = useExpanded(ws.workspaceId);
   const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -291,6 +293,17 @@ export function Sidebar({ onCollapse }: { onCollapse: () => void }) {
             <CircleCheckBig size={16} />
           </span>
           <span className="flex-1">My tracker</span>
+        </Link>
+        <Link
+          href={`/w/${ws.workspaceId}/worklog`}
+          className={`flex h-[30px] w-full items-center gap-2 rounded-md px-2 text-sm hover:bg-hover ${
+            onWorkLog ? "bg-hover font-medium text-ink" : "text-ink-2"
+          }`}
+        >
+          <span className="flex w-5 justify-center">
+            <ClipboardList size={16} />
+          </span>
+          <span className="flex-1">Work log</span>
         </Link>
         <Dropdown
           className="py-2"
