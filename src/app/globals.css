@@ -74,3 +74,29 @@ body {
 .ai-preview code { background: rgba(135, 131, 120, 0.15); border-radius: 4px; padding: 0.1em 0.3em; font-size: 0.85em; }
 .ai-preview pre { background: #f7f6f3; border-radius: 4px; padding: 0.75em 1em; overflow-x: auto; }
 .ai-preview blockquote { border-left: 3px solid currentColor; padding-left: 0.9em; }
+
+/* Free Video Studio */
+.font-display {
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+}
+@keyframes studio-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(6%, -4%, 0) scale(1.12); }
+}
+@keyframes studio-shimmer {
+  from { background-position: 0% 50%; }
+  to { background-position: 200% 50%; }
+}
+.studio-aurora {
+  animation: studio-drift 18s ease-in-out infinite;
+}
+.studio-shimmer {
+  background-size: 200% 100%;
+  animation: studio-shimmer 6s linear infinite;
+}
+.studio-grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+@media (prefers-reduced-motion: reduce) {
+  .studio-aurora, .studio-shimmer { animation: none; }
+}
