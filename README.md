@@ -37,6 +37,13 @@ AI Q&A over your own notes — your own copy of "Notion AI".
   - A pop-up card and a desktop notification when a reminder time arrives, while the app is open in a tab.
   - A private calendar link you add once to Google Calendar or Outlook.
 
+**Free Video Studio** (`/studio`, open to everyone, no account)
+- **Text to video**: write a prompt or a short script. Each line becomes a scene with an AI picture from a free, key-less image generator ([Pollinations](https://pollinations.ai)); a single sentence becomes a short multi-shot clip.
+- **Pictures to video**: drop in your own photos and each one becomes an animated scene.
+- Camera motion per scene (zoom in/out, pan left/right), fade/slide/zoom transitions, subtitles or big titles, snow/sparkles/rain/dust effects, color looks, cinema bars and background music.
+- Live preview, then **Make video file** records an `.mp4` (or `.webm` where the browser can't record MP4) right in the browser. Uploads, music and videos never leave the visitor's device, so the studio costs nothing to run beyond the picture requests.
+- To use a different picture service, set `STUDIO_IMAGE_ENDPOINT` (see `.env.example`).
+
 **Under the hood**
 - Email/password accounts. Each user gets their own workspace and can create more.
 - Swappable AI providers: text generation with OpenAI or Anthropic, embeddings with OpenAI or Voyage AI, chosen by environment variable with no code changes.
@@ -125,6 +132,9 @@ src/components/
   ai/                          Inline AI panel, selection toolbar button, workspace chat
   tracker/                     Week board, time tracker, month calendar, reminder settings
   ui/                          Dropdown, menu and modal primitives
+src/app/studio                 Free Video Studio page (public)
+src/app/api/studio/image       Picture generator proxy with a per-visitor rate limit
+src/components/studio/         Studio UI, canvas renderer and in-browser video export
 src/app/s/[pageId]             Public read-only pages ("Share to web")
 src/app/invite/[token]         Workspace invite links
 ```

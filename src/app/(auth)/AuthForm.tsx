@@ -100,6 +100,12 @@ export function AuthForm({ mode, callbackUrl }: { mode: "login" | "signup"; call
           {isSignup ? "Log in" : "Sign up"}
         </Link>
       </p>
+      <p className="mt-2 text-sm text-ink-2">
+        Want to make a video?{" "}
+        <Link href="/studio" className="font-medium text-ink underline">
+          Open the free Video Studio
+        </Link>
+      </p>
     </div>
   );
 }
